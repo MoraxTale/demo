@@ -33,6 +33,10 @@
                 style="-fx-font-size: 20; -fx-pref-width: 200; -fx-pref-height: 60;"/>
         <Button text="炼丹" fx:id="btnAlchemy"
                 style="-fx-font-size: 16; -fx-pref-width: 150; -fx-pref-height: 40;"/>
+        <Button text="法宝图鉴" onAction="#openTreasureShop"
+                style="-fx-font-size: 16; -fx-pref-width: 150 ; -fx-pref-height: 40;"/>
+        <Button text="我的法宝" onAction="#openTreasurePanel"
+                style="-fx-font-size: 16; -fx-pref-width: 150; -fx-pref-height: 40;"/>
         <Button text="渡劫 (消耗10000)" fx:id="btnBreakthrough"
                 style="-fx-font-size: 20; -fx-pref-width: 250; -fx-pref-height: 60;"
                 onAction="#breakthrough"/> <!-- 确保此处闭合 -->
