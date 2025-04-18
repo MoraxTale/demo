@@ -10,7 +10,7 @@ public class TreasureController {
     private Controller mainController;
 
     @FXML
-    private ListView<String> treasureListView; // 我的法宝列表
+    private ListView<String> treasureListView; // 修改：确保正确绑定
 
     private final Map<String, TreasureData> treasures = new HashMap<>();
 
@@ -34,10 +34,5 @@ public class TreasureController {
         for (String name : treasures.keySet()) {
             treasureListView.getItems().add(name);
         }
-    }
-
-    public void addTreasure(TreasureData treasure) {
-        treasures.put(treasure.getName(), treasure);
-        updateTreasureDisplay();
     }
 }
