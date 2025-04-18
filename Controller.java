@@ -13,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import javafx.stage.Modality;
 import javafx.stage.FileChooser;
+
 import java.io.*;
 import java.util.Map;
 
@@ -33,7 +34,6 @@ public class Controller {
     private final DoubleProperty successRate = new SimpleDoubleProperty(BASE_SUCCESS_RATE);
     private int stageLevel = 0;
     private final String[] STAGES = {"凡人", "炼气", "筑基", "金丹", "元婴", "化神", "渡劫", "大乘", "大罗金仙"};
-
     // 控制器和窗口对象
     private AlchemyController alchemyController;
     private TreasureController treasureController;
@@ -88,7 +88,6 @@ public class Controller {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("TreasureShopView.fxml"));
             Parent root = loader.load();
-            // 修改：确保获取正确的控制器类型
             treasureShopController = loader.getController();
             treasureShopController.setMainController(this);
         } catch (IOException e) {
@@ -96,9 +95,7 @@ public class Controller {
         }
     }
 
-    // === 界面操作方法 ===
-
-    // 打开法宝界面（修复：添加@FXML和public修饰符）
+    // 打开法宝界面
     @FXML
     public void openTreasurePanel() {
         try {
@@ -123,7 +120,7 @@ public class Controller {
         }
     }
 
-    // 打开法宝商店（修复：添加@FXML和public修饰符）
+    // 打开法宝商店
     @FXML
     public void openTreasureShop() {
         try {
@@ -148,7 +145,7 @@ public class Controller {
         }
     }
 
-    // === 法宝管理方法 ===
+    // 法宝管理方法
     public void addTreasureToBackpack(TreasureData treasure) {
         if (treasureController != null) {
             treasureController.getTreasures().put(treasure.getName(), treasure);
@@ -158,7 +155,7 @@ public class Controller {
 
     // === 原有功能方法 ===
 
-    // 保存游戏（集成法宝数据）
+    // 保存游戏
     public void saveGame(String filePath) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
             GameState state = new GameState(
@@ -174,7 +171,7 @@ public class Controller {
         }
     }
 
-    // 加载游戏（集成法宝数据）
+    // 加载游戏
     public void loadGame(String filePath) {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
             GameState state = (GameState) ois.readObject();
@@ -254,7 +251,7 @@ public class Controller {
         }
     }
 
-    // === 工具方法 ===
+    // 工具方法
     public boolean deductQi(int amount) {
         if (qi.get() >= amount) {
             qi.set(qi.get() - amount);
