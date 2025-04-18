@@ -1,25 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuItem?>
 <VBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.demo.Controller"
       spacing="20"
       alignment="CENTER"
       style="-fx-padding: 20;">
+
     <MenuBar>
         <Menu text="文件">
             <MenuItem text="保存" onAction="#handleSave"/>
             <MenuItem text="加载" onAction="#handleLoad"/>
         </Menu>
     </MenuBar>
-    <!-- 数值显示区域 -->
+
     <HBox spacing="20" alignment="CENTER">
         <Label fx:id="lblStage" style="-fx-font-size: 16;"/>
         <Label fx:id="lblQi" style="-fx-font-size: 16;"/>
@@ -27,14 +29,17 @@
         <Label fx:id="lblSuccessRate" style="-fx-font-size: 16;"/>
     </HBox>
 
-    <!-- 按钮区域（修复此处） -->
     <VBox spacing="10" alignment="CENTER">
         <Button text="修炼" fx:id="btnCultivate"
                 style="-fx-font-size: 20; -fx-pref-width: 200; -fx-pref-height: 60;"/>
         <Button text="炼丹" fx:id="btnAlchemy"
                 style="-fx-font-size: 16; -fx-pref-width: 150; -fx-pref-height: 40;"/>
+        <Button text="法宝图鉴" onAction="#openTreasureShop"
+                style="-fx-font-size: 16; -fx-pref-width: 150 ; -fx-pref-height: 40;"/>
+        <Button text="我的法宝" onAction="#openTreasurePanel"
+                style="-fx-font-size: 16; -fx-pref-width: 150; -fx-pref-height: 40;"/>
         <Button text="渡劫 (消耗10000)" fx:id="btnBreakthrough"
                 style="-fx-font-size: 20; -fx-pref-width: 250; -fx-pref-height: 60;"
-                onAction="#breakthrough"/> <!-- 确保此处闭合 -->
+                onAction="#breakthrough"/>
     </VBox>
 </VBox>
