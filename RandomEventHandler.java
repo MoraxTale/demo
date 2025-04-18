@@ -28,7 +28,7 @@ public class RandomEventHandler {
     private void triggerRandomEvent() {
         // **定义三种事件**
         List<Event> events = new ArrayList<>();
-        events.add(new Event("灵气波动", "灵气突然波动", createQiOptions()));
+        events.add(new Event("灵气波动", "灵气突然波动,运用功法好像能改变灵气的吸收程度", createQiOptions()));
         events.add(new Event("神秘商人", "神秘商人出现", createMerchantOptions()));
         events.add(new Event("秘境探险", "发现秘境入口", createAdventureOptions()));
 
@@ -42,9 +42,9 @@ public class RandomEventHandler {
     // **创建灵气波动事件的选项**
     private List<EventOption> createQiOptions() {
         List<EventOption> options = new ArrayList<>();
-        options.add(new EventOption("灵气爆发，获得灵气", getQiChangeRange()[0], getQiChangeRange()[1]));
-        options.add(new EventOption("灵气泄露，失去灵气", getQiChangeRange()[0] * -1, getQiChangeRange()[1] * -1)); // 负数表示失去
-        options.add(new EventOption("灵气稳固，获得特殊丹药", 0, 0)); // 无变化
+        options.add(new EventOption("强化筋脉,稳固身形", getQiChangeRange()[0], getQiChangeRange()[1]));
+        options.add(new EventOption("放松穴位,任其吸入", getQiChangeRange()[0] * -1, getQiChangeRange()[1] * -1)); // 负数表示失去
+        options.add(new EventOption("集中精神,进行炼化", 0, 0)); // 无变化
         return options;
     }
 
