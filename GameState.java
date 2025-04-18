@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo1;
 
 // 导入 Java 序列化相关类
 import java.io.Serializable;
@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public class GameState implements Serializable {
     // 序列化版本号，确保序列化和反序列化的兼容性
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1;
     // 当前灵气值
     private int qi;
     // 当前灵气增长速度
@@ -19,8 +19,7 @@ public class GameState implements Serializable {
     private Map<String, AlchemyController.PillData> pills;
     // 当前境界等级
     private int stageLevel;
-    // 新增：保存时的系统时间（毫秒）
-    private long lastSaveTime;
+
     /**
      * 构造方法，初始化游戏状态对象
      * @param qi 当前灵气值
@@ -28,13 +27,13 @@ public class GameState implements Serializable {
      * @param pills 炼丹数据
      * @param stageLevel 当前境界等级
      */
-    public GameState(int qi, double qiRate, Map<String, AlchemyController.PillData> pills, int stageLevel,long lastSaveTime) {
+    public GameState(int qi, double qiRate, Map<String, AlchemyController.PillData> pills, int stageLevel) {
         this.qi = qi;
         this.qiRate = qiRate;
         this.pills = pills;
         this.stageLevel = stageLevel;
-        this.lastSaveTime = lastSaveTime; // 记录保存时间
     }
+
     /**
      * 获取当前灵气值的方法
      * @return 当前灵气值
@@ -59,21 +58,11 @@ public class GameState implements Serializable {
         return pills;
     }
 
-    public long getLastSaveTime() {
-        return lastSaveTime;
-    }
     /**
      * 获取当前境界等级的方法
      * @return 当前境界等级
      */
     public int getStageLevel() {
         return stageLevel;
-    }
-    @Override
-    public String toString() {
-        return String.format(
-                "GameState{qi=%d, qiRate=%.1f, pills=%s, stageLevel=%d}",
-                qi, qiRate, (pills != null ? pills.size() + " items" : "null"), stageLevel
-        );
     }
 }
