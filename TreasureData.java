@@ -1,38 +1,32 @@
 package com.example.demo;
 
-public class TreasureData {
-    private String name;
-    private String effect; // 法宝的效果描述
-    private int level; // 当前法宝等级
-    private int nextUpgradeCost; // 升级所需灵气
+import java.io.Serializable;
 
-    // 修改后的构造器，包含完整的参数
-    public TreasureData(String name, String effect, int level, int nextUpgradeCost) {
+public class TreasureData implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private final String name;
+    private final String effect;
+    private final int purchaseCost; // 新增购买价格字段
+    private int level;
+    private int nextUpgradeCost;
+
+    public TreasureData(String name, String effect, int purchaseCost, int baseUpgradeCost) {
         this.name = name;
         this.effect = effect;
-        this.level = level;
-        this.nextUpgradeCost = nextUpgradeCost;
-    }
-
-    // Getter 和 Setter 方法
-    public String getName() {
-        return name;
-    }
-
-    public String getEffect() {
-        return effect;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public int getNextUpgradeCost() {
-        return nextUpgradeCost;
+        this.purchaseCost = purchaseCost;
+        this.level = 0;
+        this.nextUpgradeCost = baseUpgradeCost;
     }
 
     public void upgrade() {
-        this.level++; // 等级提升
-        this.nextUpgradeCost += 5000; // 假设每次升级费用增加5000灵气
+        level++;
+        nextUpgradeCost *= 1.5;
     }
+
+    // Getters
+    public String getName() { return name; }
+    public String getEffect() { return effect; }
+    public int getPurchaseCost() { return purchaseCost; }
+    public int getLevel() { return level; }
+    public int getNextUpgradeCost() { return nextUpgradeCost; }
 }
