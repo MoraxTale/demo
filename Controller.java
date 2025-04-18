@@ -72,7 +72,9 @@ public class Controller {
     private int stageLevel = 0;
     // 境界名称数组，存储所有可能的境界名称
     private final String[] STAGES = {"凡人", "炼气", "筑基", "金丹", "元婴", "化神", "渡劫", "大乘", "大罗金仙"};
-
+    public int getStageLevel() {
+        return stageLevel;
+    }
     /**
      * 初始化方法，在 FXML 加载完成后自动调用，用于初始化界面元素和事件处理
      */
@@ -90,7 +92,7 @@ public class Controller {
         lblSuccessRate.textProperty().bind(Bindings.format("渡劫成功率：%.1f%%", actualSuccessRate.multiply(100)));
 
         // 为修炼按钮添加点击事件处理逻辑
-        btnCultivate.setOnAction(event -> cultivate());
+        btnCultivate.setOnAction(event -> updataQi(1000));
         // 为炼丹按钮添加点击事件处理逻辑
         btnAlchemy.setOnAction(event -> openAlchemyPanel());
         // 初始化随机事件处理器
@@ -154,9 +156,7 @@ public class Controller {
             System.err.println("保存游戏时出现 IO 错误。");
         }
     }
-    public int getStageLevel() {
-        return stageLevel;
-    }
+
     public void updateActualSuccessRate() {
         double pillImpact = 0.0;
         if (alchemyController != null) {
@@ -386,9 +386,9 @@ public class Controller {
      * 修炼方法，增加灵气值并检查随机事件
      */
     @FXML
-    private void cultivate() {
+    private void updataQi(int amount) {
         // 增加灵气值
-        qi.set(qi.get() + 1000);
+        qi.set(qi.get() + amount);
         // 检查是否触发随机事件
         randomEventHandler.checkRandomEvent();
     }
@@ -438,6 +438,10 @@ public class Controller {
      * @return 如果扣除成功返回 true，否则返回 false
      */
     public boolean deductQi(int amount) {
+        if (amount < 0) {
+            // 防止负数输入
+            return false;
+        }
         if (qi.get() >= amount) {
             // 如果灵气足够，扣除灵气并返回 true
             qi.set(qi.get() - amount);
