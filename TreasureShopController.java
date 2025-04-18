@@ -1,59 +1,56 @@
 package com.example.demo;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public class TreasureShopController {
+    private Controller mainController;
+
     @FXML
     private VBox vboxShop;
 
-    private Controller mainController;
-    private final Map<String, TreasureData> availableTreasures = new LinkedHashMap<>();
-
-    public void setMainController(Controller controller) {
-        this.mainController = controller;
-        initializeShopItems();
+    public void setMainController(Controller mainController) {
+        this.mainController = mainController;
     }
 
-    private void initializeShopItems() {
-        availableTreasures.clear();
-
-        // 添加示例法宝
-        availableTreasures.put("九转活水葫芦", new TreasureData("九转活水葫芦", "离线灵气能力", 1, 5000));
-        availableTreasures.put("八方来财铜钱", new TreasureData("八方来财铜钱", "灵气+10%", 1, 8000));
-
-        updateShopDisplay();
+    @FXML
+    private void initialize() {
+        loadShopTreasures();
     }
 
-    private void updateShopDisplay() {
+    public void loadShopTreasures() {
+        // 示例法宝数据，可以替换为动态加载数据
+        String[] treasures = {"五禽戏秘籍", "法宝 B", "法宝 C"};
+        // 法宝简介
+        Map<String, String> treasureDescriptions = new HashMap<>();
+        treasureDescriptions.put("五禽戏秘籍", "升级可提高每次点击的灵力数量");
+        treasureDescriptions.put("法宝 B", "此法宝蕴含着古老的力量，可提升使用者的防御。");
+        treasureDescriptions.put("法宝 C", "该法宝具有独特的属性，能帮助使用者洞察先机。");
+
         vboxShop.getChildren().clear();
-
-        availableTreasures.forEach((name, data) -> {
-            Button btn = new Button();
-            btn.setStyle("-fx-font-size: 14; -fx-pref-width: 400; -fx-pref-height: 60;");
-            btn.setText(String.format("%s\n效果：%s\n价格：%d灵气",
-                    name, data.getEffect(), data.getNextUpgradeCost()));
-            btn.setOnAction(e -> buyTreasure(name, data));
-            vboxShop.getChildren().add(btn);
-        });
+        for (String treasure : treasures) {
+            Button button = new Button(treasure);
+            button.setStyle("-fx-font-size: 14; -fx-padding: 5;");
+            button.setOnAction(e -> showTreasureDescription(treasure, treasureDescriptions.get(treasure)));
+            vboxShop.getChildren().add(button);
+        }
     }
 
-    private void buyTreasure(String name, TreasureData data) {
-        if (mainController.deductQi(data.getNextUpgradeCost())) {
-            mainController.addTreasureToBackpack(new TreasureData(data.getName(), data.getEffect(), 1, data.getNextUpgradeCost()));
-            mainController.showInformation("成功购买", "您已成功购买：" + name);
-        } else {
-            mainController.showWarning("灵气不足", "无法购买：" + name);
-        }
+    private void showTreasureDescription(String treasureName, String description) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("法宝简介");
+        alert.setHeaderText(treasureName + " 简介");
+        alert.setContentText(description);
+        alert.showAndWait();
     }
 
     @FXML
     private void closeShopPanel() {
-        ((Stage) vboxShop.getScene().getWindow()).close();
+        vboxShop.getScene().getWindow().hide();
     }
 }
