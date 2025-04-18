@@ -1,22 +1,26 @@
-package com.example.demo;
 
-/**
- * 事件选项类，用于表示随机事件中的选项
- */
-public record EventOption(String description, int reward) {
-    /**
-     * 获取选项描述的方法
-     * @return 选项描述
-     */
-    public String getDescription() {
-        return "";
+package com.example.demo1;
+
+public class EventOption {
+    private String description;
+    private int minReward;
+    private int maxReward;
+
+    public EventOption(String description, int minReward, int maxReward) {
+        this.description = description;
+        this.minReward = minReward;
+        this.maxReward = maxReward;
     }
 
-    /**
-     * 获取选项奖励值的方法
-     * @return 选项奖励值
-     */
-    public int getReward() {
-        return 0;
+    public String getDescription() {
+        return description;
+    }
+
+    public int getMinReward() {
+        return minReward;
+    }
+
+    public int getMaxReward() {
+        return maxReward;
     }
 }
