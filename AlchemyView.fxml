@@ -5,13 +5,13 @@
 
 <VBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.demo.AlchemyController"
+      fx:controller="com.example.demo1.AlchemyController"
       spacing="10"
       alignment="CENTER"
       style="-fx-padding: 20;">
 
     <Label text="丹药列表（高级优先）" style="-fx-font-size: 18; -fx-alignment: CENTER; -fx-padding: 10 0;"/>
-    <VBox fx:id="vboxPills" spacing="5"/>
+    <VBox fx:id="vboxPills" spacing="5" style="-fx-padding: 10 0;"/>
     <Button text="返回" onAction="#closeAlchemyPanel"
             style="-fx-font-size: 14; -fx-pref-width: 80; -fx-alignment: CENTER; -fx-padding: 10 0;"/>
 </VBox>
