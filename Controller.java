@@ -1,23 +1,34 @@
 // 声明包名
-package com.example.demo1;
+package com.example.demo;
 
 // 导入 JavaFX 属性相关类，用于创建和管理可观察的属性
-
-import javafx.animation.AnimationTimer;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+// 导入 JavaFX 动画计时器类，用于实现定时任务
+import javafx.animation.AnimationTimer;
+// 导入 JavaFX 属性相关类
 import javafx.beans.property.*;
+// 导入 JavaFX FXML 相关类，用于加载 FXML 文件和处理 FXML 元素
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+// 导入 JavaFX 场景图相关类
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+// 导入 JavaFX 对话框相关类
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.stage.FileChooser;
-import javafx.stage.Modality;
+// 导入 JavaFX 窗口相关类
 import javafx.stage.Stage;
-
+import javafx.stage.Modality;
+// 导入 Java 输入输出相关类
 import java.io.*;
+// 导入 JavaFX 文件选择器类
+import javafx.stage.FileChooser;
+// 导入 Java 集合框架中的 Map 接口
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -36,13 +47,20 @@ public class Controller {
     private final DoubleProperty actualSuccessRate = new SimpleDoubleProperty(BASE_SUCCESS_RATE);
 
     // 以下是 FXML 中定义的界面元素，通过 @FXML 注解注入
-    @FXML private Label lblStage; // 显示当前境界的标签
-    @FXML private Label lblQi; // 显示当前灵气值的标签
-    @FXML private Label lblQiRate; // 显示灵气增长速度的标签
-    @FXML private Label lblSuccessRate; // 显示渡劫成功率的标签
-    @FXML private Button btnCultivate; // 修炼按钮，点击可增加灵气
-    @FXML private Button btnAlchemy; // 炼丹按钮，点击打开炼丹界面
-    @FXML private Button btnBreakthrough; // 渡劫按钮，点击尝试渡劫
+    @FXML
+    private Label lblStage; // 显示当前境界的标签
+    @FXML
+    private Label lblQi; // 显示当前灵气值的标签
+    @FXML
+    private Label lblQiRate; // 显示灵气增长速度的标签
+    @FXML
+    private Label lblSuccessRate; // 显示渡劫成功率的标签
+    @FXML
+    private Button btnCultivate; // 修炼按钮，点击可增加灵气
+    @FXML
+    private Button btnAlchemy; // 炼丹按钮，点击打开炼丹界面
+    @FXML
+    private Button btnBreakthrough; // 渡劫按钮，点击尝试渡劫
 
     // 灵气值属性，使用 JavaFX 的 IntegerProperty 实现可观察
     private final IntegerProperty qi = new SimpleIntegerProperty(0);
@@ -61,10 +79,15 @@ public class Controller {
     private int stageLevel = 0;
     // 境界名称数组，存储所有可能的境界名称
     private final String[] STAGES = {"凡人", "炼气", "筑基", "金丹", "元婴", "化神", "渡劫", "大乘", "大罗金仙"};
+    // 控制器和窗口对象
+    private TreasureController treasureController;
+    private TreasureShopController treasureShopController;
+    private Stage treasureStage, treasureShopStage;
+    private static final long MAX_OFFLINE_TIME_MS = 1 * 60 * 1000;
+
     public int getStageLevel() {
         return stageLevel;
     }
-    private static final long MAX_OFFLINE_TIME = 1 * 60 * 1000; // 10 分钟
 
     /**
      * 初始化方法，在 FXML 加载完成后自动调用，用于初始化界面元素和事件处理
@@ -90,6 +113,8 @@ public class Controller {
         randomEventHandler = new RandomEventHandler(this);
         // 再次启动灵气自动增长的定时器（可能是代码冗余，可考虑优化）
         startAutoQiGrowth();
+        initTreasurePanel();
+        initTreasureShop();
 
         try {
             // 创建 FXMLLoader 对象，用于加载炼丹界面的 FXML 文件
@@ -110,6 +135,7 @@ public class Controller {
 
     /**
      * 保存游戏方法，将当前游戏状态保存到指定文件
+     *
      * @param filePath 保存文件的路径
      */
     public void saveGame(String filePath) {
@@ -121,6 +147,7 @@ public class Controller {
                         qi.get(),
                         qiRate.get(),
                         null,
+                        treasureController != null ? treasureController.getTreasures() : null,
                         stageLevel,
                         currentTime
                 );
@@ -132,6 +159,7 @@ public class Controller {
                         qi.get(),
                         qiRate.get(),
                         savedPills, // 确保获取最新数据
+                        treasureController != null ? treasureController.getTreasures() : null,
                         stageLevel,
                         currentTime
                 );
@@ -139,15 +167,90 @@ public class Controller {
                 oos.writeObject(state);
                 System.out.println("[保存] 存档时间已记录: " + currentTime);
             }
-        }
-        catch (IOException e) {
+
+        } catch (IOException e) {
             // 打印异常堆栈信息
             e.printStackTrace();
             // 输出保存游戏时出现 IO 错误的信息
             System.err.println("保存游戏时出现 IO 错误。");
         }
     }
+    private void initTreasurePanel() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("TreasureView.fxml")); // 正确加载背包界面
+            Parent root = loader.load();
+            treasureController = loader.getController(); // 正确获取 TreasureController
+            treasureController.setMainController(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+            // 输出保存游戏时出现 IO 错误的信息
+            System.err.println("保存游戏时出现 IO 错误。");
+        }
+    }
+    // 初始化法宝商店界面
+    private void initTreasureShop() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("TreasureShopView.fxml"));
+            Parent root = loader.load();
+            treasureShopController = loader.getController();
+            treasureShopController.setMainController(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    // 打开法宝界面
+    @FXML
+    public void openTreasurePanel() {
+        try {
+            if (treasureStage != null && treasureStage.isShowing()) {
+                treasureStage.requestFocus();
+                return;
+            }
 
+            if (treasureStage == null) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("TreasureView.fxml"));
+                Parent root = loader.load();
+                treasureStage = new Stage();
+                treasureStage.setTitle("我的法宝");
+                treasureStage.initModality(Modality.APPLICATION_MODAL);
+                treasureStage.initOwner(lblQi.getScene().getWindow());
+                treasureStage.setOnHidden(event -> treasureStage = null);
+                treasureStage.setScene(new Scene(root));
+            }
+            treasureStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    // 打开法宝商店
+    @FXML
+    public void openTreasureShop() {
+        try {
+            if (treasureShopStage != null && treasureShopStage.isShowing()) {
+                treasureShopStage.requestFocus();
+                return;
+            }
+            if (treasureShopStage == null) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("TreasureShopView.fxml"));
+                Parent root = loader.load();
+                treasureShopStage = new Stage();
+                treasureShopStage.setTitle("法宝商店");
+                treasureShopStage.initModality(Modality.APPLICATION_MODAL);
+                treasureShopStage.initOwner(lblQi.getScene().getWindow());
+                treasureShopStage.setOnHidden(event -> treasureShopStage = null);
+                treasureShopStage.setScene(new Scene(root));
+            }treasureShopStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    // 法宝管理方法
+    public void addTreasureToBackpack(TreasureData treasure) {
+        if (treasureController != null) {
+            treasureController.getTreasures().put(treasure.getName(), treasure);
+            treasureController.updateTreasureDisplay();
+        }
+    }
     public void updateActualSuccessRate() {
         double pillImpact = 0.0;
         if (alchemyController != null) {
@@ -160,6 +263,7 @@ public class Controller {
 
     /**
      * 加载游戏方法，从指定文件加载游戏状态
+     *
      * @param filePath 加载文件的路径
      */
     public void loadGame(String filePath) {
@@ -176,7 +280,11 @@ public class Controller {
                 GameState state = (GameState) ois.readObject();
                 System.out.println("[加载] 读取存档，丹药数量: " + (state.getPills() != null ? state.getPills().size() : 0));// 计算时间差（单位：秒）
                 long savedTime = state.getLastSaveTime();
+                System.out.println("[DEBUG] 存档时间: " + savedTime);
                 long currentTime = System.currentTimeMillis();
+                System.out.println("[DEBUG] 当前时间: " + currentTime);
+                long deltaTimeSeconds = (currentTime - savedTime) / 1000;
+                System.out.println("[DEBUG] 时间差（秒）: " + deltaTimeSeconds);
                 long totalOfflineTimeMs = currentTime - savedTime;
 
                 // 计算实际有效的离线时间（不超过最大限制）
@@ -194,15 +302,15 @@ public class Controller {
                     // 旧存档处理
                     qi.set(state.getQi());
                     System.out.println("[加载] 旧存档，无离线时间补偿");
-                } else if (effectiveDeltaTimeSeconds > 0) {
+                } else if (deltaTimeSeconds > 0) {
                     // 计算离线灵气
-                    gainedQi = (int) (effectiveDeltaTimeSeconds * state.getQiRate());
+                    gainedQi = (int) (deltaTimeSeconds * state.getQiRate());
                     qi.set(state.getQi() + gainedQi);
 
                     // 转换时间为可读格式
-                    long hours = effectiveDeltaTimeSeconds / 3600;
-                    long minutes = (effectiveDeltaTimeSeconds % 3600) / 60;
-                    long seconds = effectiveDeltaTimeSeconds % 60;
+                    long hours = deltaTimeSeconds / 3600;
+                    long minutes = (deltaTimeSeconds % 3600) / 60;
+                    long seconds = deltaTimeSeconds % 60;
                     timeMessage = String.format("%d小时%d分%d秒", hours, minutes, seconds);
 
                     showDialog = true;
@@ -254,7 +362,7 @@ public class Controller {
                 savedPills.clear();
                 if (state.getPills() != null) {
                     state.getPills().forEach((id, data) -> {
-                        AlchemyController.PillData copiedData = new AlchemyController.PillData(data.cost, data.rate,data.successRateImpact);
+                        AlchemyController.PillData copiedData = new AlchemyController.PillData(data.cost, data.rate, data.successRateImpact);
                         copiedData.count = data.count;
                         savedPills.put(id, copiedData);
                     });
@@ -268,6 +376,10 @@ public class Controller {
                     initializeAlchemyController(); // 新增方法
                     // 输出炼丹控制器未初始化，无法加载炼丹数据的信息
                     System.err.println("炼丹控制器未初始化，无法加载炼丹数据。");
+
+                }
+                if (treasureController != null) {
+                    treasureController.setTreasures(state.getTreasures());
                 }
             }
         } catch (java.io.EOFException e) {
@@ -285,6 +397,7 @@ public class Controller {
 
     /**
      * 处理保存游戏按钮点击事件的方法
+     *
      * @param event 按钮点击事件对象
      */
     @FXML
@@ -307,6 +420,7 @@ public class Controller {
 
     /**
      * 处理加载游戏按钮点击事件的方法
+     *
      * @param event 按钮点击事件对象
      */
     @FXML
@@ -385,6 +499,7 @@ public class Controller {
             new Alert(Alert.AlertType.ERROR, "渡劫失败！下次成功率：" + String.format("%.1f%%", actualSuccessRate.get() * 100)).showAndWait();
         }
     }
+
     /**
      * 修炼方法，增加灵气值并检查随机事件
      */
@@ -437,6 +552,7 @@ public class Controller {
 
     /**
      * 扣除灵气的方法
+     *
      * @param amount 要扣除的灵气数量
      * @return 如果扣除成功返回 true，否则返回 false
      */
@@ -455,6 +571,7 @@ public class Controller {
 
     /**
      * 增加灵气增长速度的方法
+     *
      * @param rate 要增加的灵气增长速度
      */
     public void increaseQiRate(double rate) {
@@ -464,13 +581,16 @@ public class Controller {
 
     /**
      * 更新灵气值的方法
+     *
      * @param amount 要增加或减少的灵气数量
      */
     public void updateQi(int amount) {
         // 更新灵气值
         qi.set(qi.get() + amount);
     }
+
     private Map<String, AlchemyController.PillData> savedPills = new LinkedHashMap<>(); // 新增字段存储丹药数据
+
     // 新增方法：提供给其他类获取丹药数据
     public Map<String, AlchemyController.PillData> getSavedPills() {
         return savedPills;
@@ -482,12 +602,13 @@ public class Controller {
         savedPills.clear();
         pills.forEach((id, data) -> {
             // 深拷贝每个丹药对象，避免引用问题
-            AlchemyController.PillData copiedData = new AlchemyController.PillData(data.cost, data.rate,data.successRateImpact);
+            AlchemyController.PillData copiedData = new AlchemyController.PillData(data.cost, data.rate, data.successRateImpact);
             copiedData.count = data.count;
             savedPills.put(id, copiedData);
         });
         System.out.println("[主控制器] 已保存丹药数据: " + savedPills.size() + " 条");
     }
+
     private void initializeAlchemyController() {
         try {
             if (alchemyController == null) {
@@ -502,4 +623,5 @@ public class Controller {
             e.printStackTrace();
         }
     }
+
 }
