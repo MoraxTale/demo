@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Button?>
 
 <VBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
@@ -13,10 +12,5 @@
 
     <Label text="我的法宝" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
 
-    <ScrollPane fitToWidth="true" style="-fx-max-height: 400;">
-        <VBox fx:id="vboxTreasures" spacing="10" style="-fx-padding: 10;"/>
-    </ScrollPane>
-
-    <Button text="返回" onAction="#closeTreasurePanel"
-            style="-fx-font-size: 14; -fx-pref-width: 100;"/>
+    <ListView fx:id="treasureListView" style="-fx-pref-height: 400;"/>
 </VBox>
