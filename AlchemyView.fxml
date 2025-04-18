@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx/21"
@@ -9,9 +12,27 @@
       spacing="10"
       alignment="CENTER"
       style="-fx-padding: 20;">
-
-    <Label text="丹药列表（高级优先）" style="-fx-font-size: 18; -fx-alignment: CENTER; -fx-padding: 10 0;"/>
-    <VBox fx:id="vboxPills" spacing="5"/>
+    <Label text="丹药列表（五五玄阵）" style="-fx-font-size: 18;"/>
+    <GridPane fx:id="gridPills"
+              hgap="5" vgap="5"
+              style="-fx-padding: 10;">
+        <!-- 定义5列等宽 -->
+        <columnConstraints>
+            <ColumnConstraints percentWidth="20"/>
+            <ColumnConstraints percentWidth="20"/>
+            <ColumnConstraints percentWidth="20"/>
+            <ColumnConstraints percentWidth="20"/>
+            <ColumnConstraints percentWidth="20"/>
+        </columnConstraints>
+        <!-- 定义5行等高 -->
+        <rowConstraints>
+            <RowConstraints percentHeight="20"/>
+            <RowConstraints percentHeight="20"/>
+            <RowConstraints percentHeight="20"/>
+            <RowConstraints percentHeight="20"/>
+            <RowConstraints percentHeight="20"/>
+        </rowConstraints>
+    </GridPane>
     <Button text="返回" onAction="#closeAlchemyPanel"
-            style="-fx-font-size: 14; -fx-pref-width: 80; -fx-alignment: CENTER; -fx-padding: 10 0;"/>
+            style="-fx-font-size: 14; -fx-pref-width: 80;"/>
 </VBox>
