@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.demo.TreasureShopController"
+      spacing="10"
+      alignment="CENTER"
+      style="-fx-padding: 20; -fx-background-color: #f0f0f0;">
+
+    <Label text="法宝图鉴" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+
+    <ScrollPane fitToWidth="true" style="-fx-max-height: 400;">
+        <VBox fx:id="vboxShop" spacing="10" style="-fx-padding: 10;"/>
+    </ScrollPane>
+
+    <Button text="返回" onAction="#closeShopPanel"
+            style="-fx-font-size: 14; -fx-pref-width: 100;"/>
+</VBox>
