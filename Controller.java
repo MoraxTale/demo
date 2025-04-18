@@ -1,34 +1,23 @@
 // 声明包名
-package com.example.demo;
+package com.example.demo1;
 
 // 导入 JavaFX 属性相关类，用于创建和管理可观察的属性
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-// 导入 JavaFX 动画计时器类，用于实现定时任务
+
 import javafx.animation.AnimationTimer;
-// 导入 JavaFX 属性相关类
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
-// 导入 JavaFX FXML 相关类，用于加载 FXML 文件和处理 FXML 元素
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-// 导入 JavaFX 场景图相关类
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-// 导入 JavaFX 对话框相关类
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-// 导入 JavaFX 窗口相关类
-import javafx.stage.Stage;
-import javafx.stage.Modality;
-// 导入 Java 输入输出相关类
-import java.io.*;
-// 导入 JavaFX 文件选择器类
 import javafx.stage.FileChooser;
-// 导入 Java 集合框架中的 Map 接口
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
+import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -75,6 +64,8 @@ public class Controller {
     public int getStageLevel() {
         return stageLevel;
     }
+    private static final long MAX_OFFLINE_TIME = 1 * 60 * 1000; // 10 分钟
+
     /**
      * 初始化方法，在 FXML 加载完成后自动调用，用于初始化界面元素和事件处理
      */
@@ -184,9 +175,14 @@ public class Controller {
                 // 从文件中读取游戏状态对象
                 GameState state = (GameState) ois.readObject();
                 System.out.println("[加载] 读取存档，丹药数量: " + (state.getPills() != null ? state.getPills().size() : 0));// 计算时间差（单位：秒）
-                long savedTime = state.getLastSaveTime();System.out.println("[DEBUG] 存档时间: " + savedTime);
-                long currentTime = System.currentTimeMillis();System.out.println("[DEBUG] 当前时间: " + currentTime);
-                long deltaTimeSeconds = (currentTime - savedTime) / 1000;System.out.println("[DEBUG] 时间差（秒）: " + deltaTimeSeconds);
+                long savedTime = state.getLastSaveTime();
+                long currentTime = System.currentTimeMillis();
+                long totalOfflineTimeMs = currentTime - savedTime;
+
+                // 计算实际有效的离线时间（不超过最大限制）
+                long maxAllowedOfflineTimeMs = GameState.getMaxOfflineTimeMs();
+                long effectiveOfflineTimeMs = Math.min(totalOfflineTimeMs, maxAllowedOfflineTimeMs);
+                long effectiveDeltaTimeSeconds = effectiveOfflineTimeMs / 1000;
 
 
                 // 声明需要显示弹窗的变量
@@ -198,19 +194,23 @@ public class Controller {
                     // 旧存档处理
                     qi.set(state.getQi());
                     System.out.println("[加载] 旧存档，无离线时间补偿");
-                } else if (deltaTimeSeconds > 0) {
+                } else if (effectiveDeltaTimeSeconds > 0) {
                     // 计算离线灵气
-                    gainedQi = (int) (deltaTimeSeconds * state.getQiRate());
+                    gainedQi = (int) (effectiveDeltaTimeSeconds * state.getQiRate());
                     qi.set(state.getQi() + gainedQi);
 
                     // 转换时间为可读格式
-                    long hours = deltaTimeSeconds / 3600;
-                    long minutes = (deltaTimeSeconds % 3600) / 60;
-                    long seconds = deltaTimeSeconds % 60;
+                    long hours = effectiveDeltaTimeSeconds / 3600;
+                    long minutes = (effectiveDeltaTimeSeconds % 3600) / 60;
+                    long seconds = effectiveDeltaTimeSeconds % 60;
                     timeMessage = String.format("%d小时%d分%d秒", hours, minutes, seconds);
 
                     showDialog = true;
                     System.out.printf("[加载] 离线补偿: %s → %d灵气%n", timeMessage, gainedQi);
+                    long exceededTime = (currentTime - savedTime) - effectiveOfflineTimeMs;
+                    if (exceededTime > 0) {
+                        System.out.printf("[加载] 超出最大离线时间限制: %d秒不计入奖励%n", exceededTime / 1000);
+                    }
                 } else {
                     // 时间差无效
                     qi.set(state.getQi());
@@ -235,6 +235,9 @@ public class Controller {
                         Alert alert = new Alert(Alert.AlertType.INFORMATION);
                         alert.setTitle("离线奖励");
                         alert.setHeaderText("修真无岁月，洞中已千年");
+                        long exceededTime = (currentTime - savedTime) - effectiveOfflineTimeMs;
+                        String exceededMsg = exceededTime > 0 ?
+                                String.format("\n\n(超过最大离线时间%d秒不计入奖励)", exceededTime / 1000) : "";
                         alert.setContentText(String.format(
                                 "你在离开的 %s 时间内\n通过修炼获得了 %d 灵气！",
                                 finalTimeMessage, finalGainedQi
