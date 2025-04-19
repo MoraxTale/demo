@@ -68,6 +68,8 @@ public class GameState implements Serializable {
     public Map<String, TreasureData> getTreasures() {
         return treasures;
     }
+
+
     public long getLastSaveTime() {
         return lastSaveTime;
     }
