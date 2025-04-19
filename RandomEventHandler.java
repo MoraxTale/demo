@@ -68,7 +68,7 @@ public class RandomEventHandler {
 
     // **显示事件弹窗的方法**
     private void showEventAlert(Event event) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        Alert alert = new Alert(Alert.AlertType.NONE);
         alert.setTitle(event.getName());
         alert.setHeaderText(event.getDescription());
         alert.setContentText("请选择一个选项：");
