@@ -79,6 +79,7 @@ public class Controller {
     private int stageLevel = 0;
     // 境界名称数组，存储所有可能的境界名称
     private final String[] STAGES = {"凡人", "炼气", "筑基", "金丹", "元婴", "化神", "渡劫", "大乘", "大罗金仙"};
+    private Map<String, AlchemyController.PillData> savedPills = new LinkedHashMap<>();
     // 控制器和窗口对象
     private TreasureController treasureController;
     private TreasureShopController treasureShopController;
@@ -106,6 +107,7 @@ public class Controller {
         lblSuccessRate.textProperty().bind(Bindings.format("渡劫成功率：%.1f%%", actualSuccessRate.multiply(100)));
 
         // 为修炼按钮添加点击事件处理逻辑
+        startAutoQiGrowth();
         btnCultivate.setOnAction(event -> updataQi(1000));
         // 为炼丹按钮添加点击事件处理逻辑
         btnAlchemy.setOnAction(event -> openAlchemyPanel());
@@ -270,11 +272,30 @@ public class Controller {
         try {
             // 创建文件对象
             java.io.File file = new java.io.File(filePath);
+            if (alchemyStage != null && alchemyStage.isShowing()) {
+                alchemyStage.requestFocus();
+            }
             if (file.length() == 0) {
                 // 如果文件为空，输出提示信息并返回
                 System.out.println("存档文件为空，无法加载。");
                 return;
             }
+            if (alchemyStage == null) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("AlchemyView.fxml"));
+                Parent root = loader.load();
+                alchemyStage = new Stage();
+                alchemyStage.setTitle("炼丹界面");
+                alchemyStage.initModality(Modality.APPLICATION_MODAL);
+                alchemyStage.initOwner(lblQi.getScene().getWindow());
+                alchemyStage.setOnHidden(event -> alchemyStage = null);
+                alchemyStage.setScene(new Scene(root));
+                alchemyController = loader.getController();
+                alchemyController.setMainController(this);
+            }
+            alchemyController.loadPillsOnClick();
+            alchemyStage.showAndWait();
+
+
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
                 // 从文件中读取游戏状态对象
                 GameState state = (GameState) ois.readObject();
@@ -362,7 +383,7 @@ public class Controller {
                 savedPills.clear();
                 if (state.getPills() != null) {
                     state.getPills().forEach((id, data) -> {
-                        AlchemyController.PillData copiedData = new AlchemyController.PillData(data.cost, data.rate, data.successRateImpact);
+                        AlchemyController.PillData copiedData = new AlchemyController.PillData(data.pillId, data.pillName,data.cost, data.rate, data.successRateImpact);
                         copiedData.count = data.count;
                         savedPills.put(id, copiedData);
                     });
@@ -394,6 +415,7 @@ public class Controller {
             e.printStackTrace();
         }
     }
+
 
     /**
      * 处理保存游戏按钮点击事件的方法
@@ -589,7 +611,6 @@ public class Controller {
         qi.set(qi.get() + amount);
     }
 
-    private Map<String, AlchemyController.PillData> savedPills = new LinkedHashMap<>(); // 新增字段存储丹药数据
 
     // 新增方法：提供给其他类获取丹药数据
     public Map<String, AlchemyController.PillData> getSavedPills() {
@@ -601,8 +622,13 @@ public class Controller {
     public void savePillsData(Map<String, AlchemyController.PillData> pills) {
         savedPills.clear();
         pills.forEach((id, data) -> {
-            // 深拷贝每个丹药对象，避免引用问题
-            AlchemyController.PillData copiedData = new AlchemyController.PillData(data.cost, data.rate, data.successRateImpact);
+            AlchemyController.PillData copiedData = new AlchemyController.PillData(
+                    data.pillId,
+                    data.pillName,
+                    data.cost,
+                    data.rate,
+                    data.successRateImpact
+            );
             copiedData.count = data.count;
             savedPills.put(id, copiedData);
         });
