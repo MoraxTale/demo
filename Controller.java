@@ -157,7 +157,7 @@ public class Controller {
     }
     public void applyPillEffects() {
         // 重置基础属性
-        double baseQiRate = 1.0; // 基础修炼速度
+        double baseQiRate = 1.0 + (stageLevel * 0.5); // 基础修炼速度随境界提升
         double baseSuccessRate = BASE_SUCCESS_RATE * Math.pow(DECAY_FACTOR, stageLevel);
 
         // 计算所有丹药的累计效果
@@ -173,11 +173,6 @@ public class Controller {
         qiRate.set(baseQiRate + totalRateBoost);
         successRate.set(Math.max(0, Math.min(1, baseSuccessRate + totalSuccessBoost)));
         updateActualSuccessRate();
-
-        System.out.printf("[丹药效果] 修炼速度: %.1f (基础%.1f + 丹药%.1f)\n",
-                qiRate.get(), baseQiRate, totalRateBoost);
-        System.out.printf("[丹药效果] 渡劫成功率: %.2f%% (基础%.2f%% + 丹药%.2f%%)\n",
-                successRate.get()*100, baseSuccessRate*100, totalSuccessBoost*100);
     }
     /**
      * 保存游戏方法，将当前游戏状态保存到指定文件
@@ -429,7 +424,7 @@ public class Controller {
                     savedPills.clear();
                     state.getPills().forEach((id, data) -> {
                         AlchemyController.PillData copiedData = new AlchemyController.PillData(
-                                data.pillId, data.pillName, data.cost, data.rate, data.successRateImpact);
+                                data.pillId, data.pillName, data.cost, data.rate, data.successRateImpact,data.level);
                         copiedData.count = data.count;
                         savedPills.put(id, copiedData);
                     });
@@ -543,13 +538,11 @@ public class Controller {
 
     @FXML
     private void breakthrough() {
-        // 获取当前境界对应的消耗量（修改点：动态计算）
         int currentCost = getCurrentBreakthroughCost();
 
-        // 灵气不足判断（修改点：使用动态消耗量）
         if (qi.get() < currentCost) {
             new Alert(Alert.AlertType.WARNING,
-                    "灵气不足！需要 " + currentCost + " 灵气（当前境界：" + STAGES[stageLevel] + "）") // 新增境界显示
+                    "灵气不足！需要 " + currentCost + " 灵气（当前境界：" + STAGES[stageLevel] + ")")
                     .showAndWait();
             return;
         }
@@ -563,35 +556,30 @@ public class Controller {
                 currentStage.set(STAGES[stageLevel]);
                 successRate.set(BASE_SUCCESS_RATE * Math.pow(DECAY_FACTOR, stageLevel));
 
-                // 扣除灵气（修改点：使用动态消耗量）
                 qi.set(qi.get() - currentCost);
 
-                // 重置丹药数量
+                // 解锁新丹药
                 if (alchemyController != null) {
-                    alchemyController.getPills().values().forEach(pill -> pill.count = 0);
-                    savePillsData(alchemyController.getPills());
-                    alchemyController.loadPillsOnClick();
+                    alchemyController.updateAvailablePills();
+                    alchemyController.updatePillDisplay();
                 }
 
                 updateActualSuccessRate();
 
-                // 成功提示（新增下次消耗提示）
                 new Alert(Alert.AlertType.INFORMATION,
                         "渡劫成功！当前境界：" + STAGES[stageLevel]
-                                + "\n下次渡劫需要：" + getCurrentBreakthroughCost() + " 灵气") // 显示下次消耗
+                                + "\n下次渡劫需要：" + getCurrentBreakthroughCost() + " 灵气")
                         .showAndWait();
             }
         } else {
-            // 失败时也扣除灵气（修改点：使用动态消耗量）
             qi.set(qi.get() - currentCost);
             successRate.set(Math.min(successRate.get() + 0.1, 1.0));
             updateActualSuccessRate();
 
-            // 失败提示（新增消耗显示）
             new Alert(Alert.AlertType.ERROR,
-                    "渡劫失败！消耗灵气：" + currentCost // 显示实际消耗
+                    "渡劫失败！消耗灵气：" + currentCost
                             + "\n下次成功率：" + String.format("%.1f%%", actualSuccessRate.get() * 100)
-                            + "\n当前境界仍为：" + STAGES[stageLevel]) // 明确显示当前境界
+                            + "\n当前境界仍为：" + STAGES[stageLevel])
                     .showAndWait();
         }
     }
@@ -701,7 +689,8 @@ public class Controller {
                     data.pillName,
                     data.cost,
                     data.rate,
-                    data.successRateImpact
+                    data.successRateImpact,
+                    data.level
             );
             copiedData.count = data.count;
             savedPills.put(id, copiedData);
