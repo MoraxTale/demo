@@ -1,0 +1,52 @@
+package com.example.demo1;
+
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+
+import java.util.Map;
+
+
+public class AdventureController {
+    @FXML
+    private VBox areasContainer;
+    private Controller mainController;
+
+    public void setMainController(Controller controller) {
+        this.mainController = controller;
+    }
+
+    public void updateAreasDisplay() {
+        mainController.checkAreaUnlocks(); // 先检查解锁状态
+        areasContainer.getChildren().clear();
+        Map<String, AdventureArea> areas = mainController.getAdventureAreas();
+
+        for (AdventureArea area : areas.values()) {
+            HBox hbox = new HBox(10);
+            Label statusLabel = new Label();
+            ProgressBar progressBar = new ProgressBar();
+            Button btn = new Button();
+
+            // 区域名称与解锁状态
+            String status = area.isUnlocked() ?
+                    (area.isExploring() ? "探索中" : "可探索") :
+                    "需境界：" + area.getUnlockStage();
+            statusLabel.setText(area.getName() + " (" + status + ")");
+
+            // 进度条样式
+            progressBar.setProgress(area.getProgress());
+            progressBar.setPrefWidth(200);
+
+            // 按钮逻辑
+            btn.setText(area.isExploring() ? "探索中..." : "开始探索");
+            btn.setDisable(!area.isUnlocked() || area.isExploring());
+            btn.setOnAction(e -> mainController.startAdventure(area.getName()));
+
+            hbox.getChildren().addAll(statusLabel, progressBar, btn);
+            areasContainer.getChildren().add(hbox);
+        }
+    }
+}
