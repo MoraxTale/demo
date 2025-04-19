@@ -37,7 +37,7 @@
                 style="-fx-font-size: 16; -fx-pref-width: 150 ; -fx-pref-height: 40; -fx-font-family: 'SimSun'; -fx-background-color: linear-gradient(#e6b800, #b38f00); -fx-border-color: #806600; -fx-border-width: 2px; -fx-border-radius: 5px;"/>
         <Button text="我的法宝" onAction="#openTreasurePanel"
                 style="-fx-font-size: 16; -fx-pref-width: 150; -fx-pref-height: 40; -fx-font-family: 'SimSun'; -fx-background-color: linear-gradient(#e6b800, #b38f00); -fx-border-color: #806600; -fx-border-width: 2px; -fx-border-radius: 5px;"/>
-        <Button text="渡劫 (消耗10000)" fx:id="btnBreakthrough"
+        <Button text="渡劫" fx:id="btnBreakthrough"
                 style="-fx-font-size: 20; -fx-pref-width: 250; -fx-pref-height: 60; -fx-font-family: 'SimSun'; -fx-background-color: linear-gradient(#e6b800, #b38f00); -fx-border-color: #806600; -fx-border-width: 2px; -fx-border-radius: 5px;"
                 onAction="#breakthrough"/>
     </VBox>
