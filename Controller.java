@@ -1,7 +1,8 @@
 // 声明包名
-package com.example.demo;
+package com.example.demo1;
 
 // 导入 JavaFX 属性相关类，用于创建和管理可观察的属性
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -12,6 +13,7 @@ import javafx.animation.AnimationTimer;
 // 导入 JavaFX 属性相关类
 import javafx.beans.property.*;
 // 导入 JavaFX FXML 相关类，用于加载 FXML 文件和处理 FXML 元素
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 // 导入 JavaFX 场景图相关类
@@ -79,6 +81,7 @@ public class Controller {
     private int stageLevel = 0;
     // 境界名称数组，存储所有可能的境界名称
     private final String[] STAGES = {"凡人", "炼气", "筑基", "金丹", "元婴", "化神", "渡劫", "大乘", "大罗金仙"};
+    private Map<String, AlchemyController.PillData> savedPills = new LinkedHashMap<>();
     // 控制器和窗口对象
     private TreasureController treasureController;
     private TreasureShopController treasureShopController;
@@ -106,6 +109,7 @@ public class Controller {
         lblSuccessRate.textProperty().bind(Bindings.format("渡劫成功率：%.1f%%", actualSuccessRate.multiply(100)));
 
         // 为修炼按钮添加点击事件处理逻辑
+        startAutoQiGrowth();
         btnCultivate.setOnAction(event -> updataQi(1000));
         // 为炼丹按钮添加点击事件处理逻辑
         btnAlchemy.setOnAction(event -> openAlchemyPanel());
@@ -149,7 +153,9 @@ public class Controller {
                         null,
                         treasureController != null ? treasureController.getTreasures() : null,
                         stageLevel,
-                        currentTime
+                        currentTime,
+                        adventureAreas,          // 修正：传入冒险区域数据
+                        adventureStartTime       // 修正：传入冒险开始时间
                 );
                 // 将游戏状态对象写入文件
                 oos.writeObject(state);
@@ -161,7 +167,9 @@ public class Controller {
                         savedPills, // 确保获取最新数据
                         treasureController != null ? treasureController.getTreasures() : null,
                         stageLevel,
-                        currentTime
+                        currentTime,
+                        adventureAreas,          // 修正：传入冒险区域数据
+                        adventureStartTime       // 修正：传入冒险开始时间
                 );
                 // 将游戏状态对象写入文件
                 oos.writeObject(state);
@@ -267,17 +275,37 @@ public class Controller {
      * @param filePath 加载文件的路径
      */
     public void loadGame(String filePath) {
+        GameState state = null;
         try {
             // 创建文件对象
-            java.io.File file = new java.io.File(filePath);
+            File file = new File(filePath);
+            if (alchemyStage != null && alchemyStage.isShowing()) {
+                alchemyStage.requestFocus();
+            }
             if (file.length() == 0) {
                 // 如果文件为空，输出提示信息并返回
                 System.out.println("存档文件为空，无法加载。");
                 return;
             }
+            if (alchemyStage == null) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("AlchemyView.fxml"));
+                Parent root = loader.load();
+                alchemyStage = new Stage();
+                alchemyStage.setTitle("炼丹界面");
+                alchemyStage.initModality(Modality.APPLICATION_MODAL);
+                alchemyStage.initOwner(lblQi.getScene().getWindow());
+                alchemyStage.setOnHidden(event -> alchemyStage = null);
+                alchemyStage.setScene(new Scene(root));
+                alchemyController = loader.getController();
+                alchemyController.setMainController(this);
+            }
+            alchemyController.loadPillsOnClick();
+            alchemyStage.showAndWait();
+
+
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
                 // 从文件中读取游戏状态对象
-                GameState state = (GameState) ois.readObject();
+                state = (GameState) ois.readObject();
                 System.out.println("[加载] 读取存档，丹药数量: " + (state.getPills() != null ? state.getPills().size() : 0));// 计算时间差（单位：秒）
                 long savedTime = state.getLastSaveTime();
                 System.out.println("[DEBUG] 存档时间: " + savedTime);
@@ -339,7 +367,7 @@ public class Controller {
                 if (showDialog && gainedQi > 0) {
                     String finalTimeMessage = timeMessage;
                     int finalGainedQi = gainedQi;
-                    javafx.application.Platform.runLater(() -> {
+                    Platform.runLater(() -> {
                         Alert alert = new Alert(Alert.AlertType.INFORMATION);
                         alert.setTitle("离线奖励");
                         alert.setHeaderText("修真无岁月，洞中已千年");
@@ -362,7 +390,7 @@ public class Controller {
                 savedPills.clear();
                 if (state.getPills() != null) {
                     state.getPills().forEach((id, data) -> {
-                        AlchemyController.PillData copiedData = new AlchemyController.PillData(data.cost, data.rate, data.successRateImpact);
+                        AlchemyController.PillData copiedData = new AlchemyController.PillData(data.pillId, data.pillName, data.cost, data.rate, data.successRateImpact);
                         copiedData.count = data.count;
                         savedPills.put(id, copiedData);
                     });
@@ -382,18 +410,21 @@ public class Controller {
                     treasureController.setTreasures(state.getTreasures());
                 }
             }
-        } catch (java.io.EOFException e) {
+        } catch (EOFException e) {
             // 输出存档文件损坏，无法加载的信息
             System.err.println("存档文件损坏，无法加载。");
             // 打印异常堆栈信息
             e.printStackTrace();
-        } catch (java.io.IOException | ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             // 输出加载游戏时出现错误的信息
             System.err.println("加载游戏时出现错误：" + e.getMessage());
             // 打印异常堆栈信息
             e.printStackTrace();
         }
+        this.adventureAreas = state.getAdventureAreas();
+        this.adventureStartTime = state.getAdventureStartTime();
     }
+
 
     /**
      * 处理保存游戏按钮点击事件的方法
@@ -401,7 +432,7 @@ public class Controller {
      * @param event 按钮点击事件对象
      */
     @FXML
-    private void handleSave(javafx.event.ActionEvent event) {
+    private void handleSave(ActionEvent event) {
         // 创建文件选择器对象
         FileChooser fileChooser = new FileChooser();
         // 设置文件选择器的标题
@@ -424,7 +455,7 @@ public class Controller {
      * @param event 按钮点击事件对象
      */
     @FXML
-    private void handleLoad(javafx.event.ActionEvent event) {
+    private void handleLoad(ActionEvent event) {
         // 创建文件选择器对象
         FileChooser fileChooser = new FileChooser();
         // 设置文件选择器的标题
@@ -589,7 +620,6 @@ public class Controller {
         qi.set(qi.get() + amount);
     }
 
-    private Map<String, AlchemyController.PillData> savedPills = new LinkedHashMap<>(); // 新增字段存储丹药数据
 
     // 新增方法：提供给其他类获取丹药数据
     public Map<String, AlchemyController.PillData> getSavedPills() {
@@ -601,8 +631,13 @@ public class Controller {
     public void savePillsData(Map<String, AlchemyController.PillData> pills) {
         savedPills.clear();
         pills.forEach((id, data) -> {
-            // 深拷贝每个丹药对象，避免引用问题
-            AlchemyController.PillData copiedData = new AlchemyController.PillData(data.cost, data.rate, data.successRateImpact);
+            AlchemyController.PillData copiedData = new AlchemyController.PillData(
+                    data.pillId,
+                    data.pillName,
+                    data.cost,
+                    data.rate,
+                    data.successRateImpact
+            );
             copiedData.count = data.count;
             savedPills.put(id, copiedData);
         });
@@ -623,5 +658,105 @@ public class Controller {
             e.printStackTrace();
         }
     }
+    @FXML
+    private Button btnAdventure; // 冒险按钮
+    private Stage adventureStage;
+    private AdventureController adventureController;
+    private Map<String, AdventureArea> adventureAreas = new LinkedHashMap<>();
+    private long adventureStartTime;
 
+    // 初始化冒险区域
+    private void initAdventureAreas() {
+        adventureAreas.put("迷雾森林", new AdventureArea("迷雾森林", 0, 1.2, 1.5));
+        adventureAreas.put("幽冥洞窟", new AdventureArea("幽冥洞窟", 2, 1.5, 2.0));
+        adventureAreas.put("九天雷池", new AdventureArea("九天雷池", 4, 2.0, 3.0));
+    }
+
+    // 冒险计时检查
+    private void startAdventureCheckTimer() {
+        AnimationTimer timer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                checkAdventureProgress();
+            }
+        };
+        timer.start();
+    }
+
+    // 打开冒险界面
+    @FXML
+    private void openAdventurePanel() {
+        try {
+            if (adventureStage != null && adventureStage.isShowing()) {
+                adventureStage.requestFocus();
+                return;
+            }
+
+            if (adventureStage == null) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("AdventureView.fxml"));
+                Parent root = loader.load();
+                adventureStage = new Stage();
+                adventureStage.setTitle("秘境探索");
+                adventureStage.initModality(Modality.APPLICATION_MODAL);
+                adventureStage.initOwner(lblQi.getScene().getWindow());
+                adventureStage.setOnHidden(event -> adventureStage = null);
+                adventureStage.setScene(new Scene(root));
+                adventureController = loader.getController();
+                adventureController.setMainController(this);
+            }
+            adventureController.updateAreasDisplay();
+            adventureStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 开始探索
+    public void startAdventure(String areaName) {
+        AdventureArea area = adventureAreas.get(areaName);
+        if (area != null && !area.isExploring()) {
+            adventureStartTime = System.currentTimeMillis();
+            area.setExploring(true);
+            new Alert(Alert.AlertType.INFORMATION, "开始探索" + areaName).showAndWait();
+        }
+    }
+
+    // 检查探索进度
+    private void checkAdventureProgress() {
+        for (AdventureArea area : adventureAreas.values()) {
+            if (area.isExploring()) {
+                long currentTime = System.currentTimeMillis();
+                long elapsed = currentTime - adventureStartTime;
+                double progress = Math.min(elapsed / 3600000.0, 1.0);
+                area.setProgress(progress);
+
+                if (progress >= 1.0) {
+                    completeAdventure(area);
+                }
+            }
+        }
+    }
+
+    // 完成探索
+    private void completeAdventure(AdventureArea area) {
+        area.setExploring(false);
+        qiRate.set(qiRate.get() * area.getQiRateBonus());
+        new Alert(Alert.AlertType.INFORMATION,
+                area.getName() + "探索完成！\n灵气增长加成：" + area.getQiRateBonus() + "倍").showAndWait();
+        saveGame("auto_save.xs");
+    }
+
+    public Map<String, AdventureArea> getAdventureAreas() {
+        return adventureAreas; // 正确返回非空集合
+    }
+
+    // 删除错误代码块
+    public Map<String, AdventureArea> checkAreaUnlocks() {
+        for (AdventureArea area : adventureAreas.values()) {
+            boolean isUnlocked = (stageLevel >= area.getUnlockStage());
+            area.setUnlocked(isUnlocked);
+        }
+        return adventureAreas; // 返回更新后的区域数据
+    }
 }
+
