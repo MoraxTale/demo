@@ -6,6 +6,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class RandomEventHandler {
     private static final double TRIGGER_CHANCE = 0.5; // 0.5%触发概率
@@ -36,34 +37,51 @@ public class RandomEventHandler {
     public RandomEventHandler(Controller controller) {
         this.mainController = controller;
     }
-    private void handlePillReward(int count) {
-        String pillId = getRandomPillId();
-        if (pillId != null) {
-            AlchemyController.PillData pill = mainController.getSavedPills().get(pillId);
-            pill.count += count;
-            mainController.applyPillEffects(); // 重新计算所有丹药效果
-            String currentEffects = mainController.getPillStatus();
-            showRewardAlert("✨ 获得 " + count + " 颗" + pill.pillName + "\n\n" + currentEffects);
 
-        } else {
-            int qiGain = getQiChangeRange()[1] * count;
-            mainController.updateQi(qiGain);
-            showRewardAlert("获得 " + qiGain + " 点灵气");
+
+        private void handlePillReward(int count) {
+            int playerLevel = mainController.getStageLevel();
+            int maxRewardLevel = Math.min(25, playerLevel + 1);
+
+            // 获取所有可奖励的丹药
+            List<AlchemyController.PillData> rewardablePills = new ArrayList<>();
+            Map<String, AlchemyController.PillData> savedPills = mainController.getSavedPills();
+
+            for (AlchemyController.PillData pill : savedPills.values()) {
+                AlchemyController.PillConfig config = mainController.getAlchemyController().getPillConfig(pill.pillId);
+                if (config != null && config.getLevel() <= maxRewardLevel) {
+                    rewardablePills.add(pill);
+                }
+            }
+
+            if (!rewardablePills.isEmpty()) {
+                AlchemyController.PillData pill = rewardablePills.get(random.nextInt(rewardablePills.size()));
+                pill.count += count;
+                String currentEffects = mainController.getPillStatus();
+                showRewardAlert("✨ 获得 " + count + " 颗" + pill.pillName + "\n\n" + currentEffects);
+            } else {
+                int qiGain = getQiChangeRange()[1] * count;
+                mainController.updateQi(qiGain);
+                showRewardAlert("获得 " + qiGain + " 点灵气");
+            }
         }
-    }
 
     private void handlePillPenalty(int count) {
         String pillId = getRandomPillId();
         if (pillId != null && mainController.getSavedPills().get(pillId).count > 0) {
             AlchemyController.PillData pill = mainController.getSavedPills().get(pillId);
             int actualLoss = Math.min(count, pill.count);
+            double prevRate = pill.rate * pill.count;
+            double prevSuccessRate = pill.successRateImpact * pill.count;
             pill.count -= actualLoss;
             mainController.applyPillEffects(); // 重新计算所有丹药效果
+            double rateChange = prevRate - (pill.rate * pill.count);
+            double successRateChange = prevSuccessRate - (pill.successRateImpact * pill.count);
 
-            showRewardAlert(String.format("失去 %d 颗%s\n当前效果：修炼速度-%.1f，渡劫成功率-%.2f%%",
+            showRewardAlert(String.format("失去 %d 颗%s\n效果变化：修炼速度-%.1f，渡劫成功率-%.2f%%",
                     actualLoss, pill.pillName,
-                    pill.rate * actualLoss,
-                    pill.successRateImpact * actualLoss * 100));
+                    rateChange,
+                    successRateChange * 100));
         } else {
             int qiLoss = getQiChangeRange()[1] * count / 2;
             if (mainController.deductQi(qiLoss)) {
@@ -348,7 +366,7 @@ public class RandomEventHandler {
                             .computeIfAbsent(pill.pillId, k ->
                                     new AlchemyController.PillData(
                                             pill.pillId, pill.pillName,
-                                            pill.cost, pill.rate, pill.successRateImpact))
+                                            pill.cost, pill.rate, pill.successRateImpact,pill.level))
                             .count++;
                     mainController.applyPillEffects();
                     ((Stage) pillButton.getScene().getWindow()).close();
