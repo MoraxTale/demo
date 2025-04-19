@@ -102,11 +102,80 @@ public class AlchemyController {
     private void initializeCustomPills() {
         customPills.clear();
         customPills.add(new PillConfig(
-                "pill_001", "九转金丹", 1500, 3.0, 0.02
+                "pill_001", "聚气丹", 10, 1.0, 0.01
         ));
         customPills.add(new PillConfig(
-                "pill_002", "太乙神丹", 800, 1.5, 0.08
+                "pill_002", "凝神丹", 50, 3.0, 0.02
         ));
+        customPills.add(new PillConfig(
+                "pill_003", "筑基散", 90, 5.0, 0.03
+        ));
+        customPills.add(new PillConfig(
+                "pill_004", "灵露丹", 130, 7.0, 0.04
+        ));
+        customPills.add(new PillConfig(
+                "pill_005", "炼体丸", 170, 9.0, 0.05
+        ));
+        customPills.add(new PillConfig(
+                "pill_006", "清心丹", 210, 11.0, 0.06
+        ));
+        customPills.add(new PillConfig(
+                "pill_007", "破障丸", 250, 13.0, 0.07
+        ));
+        customPills.add(new PillConfig(
+                "pill_008", "归元丹", 290, 15.0, 0.08
+        ));
+        customPills.add(new PillConfig(
+                "pill_009", "通脉散", 330, 17.0, 0.09
+        ));
+        customPills.add(new PillConfig(
+                "pill_010", "养魂丹", 370, 19.0, 0.10
+        ));
+        customPills.add(new PillConfig(
+                "pill_011", "回春丸", 410, 21.0, 0.11
+        ));
+        customPills.add(new PillConfig(
+                "pill_012", "玄元丹", 450, 23.0, 0.12
+        ));
+        customPills.add(new PillConfig(
+                "pill_013", "天罡散", 490, 25.0, 0.13
+        ));customPills.add(new PillConfig(
+                "pill_014", "九转金丹", 530, 27.0, 0.14
+        ));
+        customPills.add(new PillConfig(
+                "pill_015", "龙血丹", 570, 29.0, 0.15
+        ));
+        customPills.add(new PillConfig(
+                "pill_016", "紫府丸", 610, 31.0, 0.16
+        ));
+        customPills.add(new PillConfig(
+                "pill_017", "星辰散", 650, 33.0, 0.17
+        ));
+        customPills.add(new PillConfig(
+                "pill_018", "太虚丹", 690, 35.0, 0.18
+        ));
+        customPills.add(new PillConfig(
+                "pill_019", "混元丹", 730, 37.0, 0.19
+        ));
+        customPills.add(new PillConfig(
+                "pill_020", "涅槃丹", 770, 39.0, 0.20
+        ));
+        customPills.add(new PillConfig(
+                "pill_021", "天劫散", 810, 41.0, 0.21
+        ));
+        customPills.add(new PillConfig(
+                "pill_022", "乾坤丹", 850, 43.0, 0.22
+        ));
+        customPills.add(new PillConfig(
+                "pill_023", "混沌丸", 890, 45.0, 0.23
+        ));
+        customPills.add(new PillConfig(
+                "pill_024", "无极散", 930, 47.0, 0.24
+        ));
+        customPills.add(new PillConfig(
+                "pill_025", "鸿蒙丹", 1000, 49.0, 0.25
+        ));
+
     }
     /**
      * 加载丹药数据的方法
@@ -161,7 +230,8 @@ public class AlchemyController {
             PillData data = entry.getValue();
             Button btn = new Button();
             btn.setStyle("-fx-font-size: 12; -fx-pref-width: 150; -fx-background-color: lightblue;");
-            btn.setText(String.format("%s\n已购%d个", data.pillName, data.count));
+            btn.setText(String.format("%s\n已购%d个\n灵气速度+%.1f\n成功率+%.1f%%\n所需灵气%d",
+                    data.pillName, data.count, data.rate, data.successRateImpact * 100,data.cost));
             btn.setOnAction(e -> buyPill(entry.getKey(), data));
 
             gridPills.add(btn, col, row);
