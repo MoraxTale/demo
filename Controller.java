@@ -45,6 +45,8 @@ public class Controller {
     // 渡劫所需的灵气消耗，固定值
     private static final int BASE_BREAKTHROUGH_COST = 1000; //
     private final DoubleProperty actualSuccessRate = new SimpleDoubleProperty(BASE_SUCCESS_RATE);
+    private Stage adventureStage;
+    private AdventureController adventureController;
 
     // 以下是 FXML 中定义的界面元素，通过 @FXML 注解注入
     @FXML
@@ -61,6 +63,9 @@ public class Controller {
     private Button btnAlchemy; // 炼丹按钮，点击打开炼丹界面
     @FXML
     private Button btnBreakthrough; // 渡劫按钮，点击尝试渡劫
+    // 在 Controller.java 的 FXML 注入区域添加
+    @FXML
+    private Button btnAdventure; // 新增冒险按钮声明
 
     // 灵气值属性，使用 JavaFX 的 IntegerProperty 实现可观察
     private final IntegerProperty qi = new SimpleIntegerProperty(0);
@@ -113,6 +118,7 @@ public class Controller {
         btnAlchemy.setOnAction(event -> openAlchemyPanel());
         // 初始化随机事件处理器
         randomEventHandler = new RandomEventHandler(this);
+        btnAdventure.setOnAction(event -> openAdventurePanel());
         // 再次启动灵气自动增长的定时器（可能是代码冗余，可考虑优化）
         startAutoQiGrowth();
         initTreasurePanel();
@@ -462,7 +468,32 @@ public class Controller {
             loadGame(file.getAbsolutePath());
         }
     }
+    @FXML
+    private void openAdventurePanel() {
+        try {
+            if (adventureStage != null && adventureStage.isShowing()) {
+                adventureStage.requestFocus();
+                return;
+            }
 
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("AdventureView.fxml"));
+            Parent root = loader.load();
+
+            adventureStage = new Stage();
+            adventureStage.setTitle("秘境探索");
+            adventureStage.initModality(Modality.APPLICATION_MODAL);
+            adventureStage.initOwner(lblQi.getScene().getWindow());
+            adventureStage.setScene(new Scene(root));
+
+            adventureController = loader.getController();
+            adventureController.setMainController(this);
+
+            adventureStage.show();
+        } catch (IOException e) {
+            new Alert(Alert.AlertType.ERROR, "无法打开冒险界面").show();
+            e.printStackTrace();
+        }
+    }
     /**
      * 启动灵气自动增长的定时器方法
      */
