@@ -9,14 +9,14 @@
       fx:controller="com.example.demo.TreasureShopController"
       spacing="10"
       alignment="CENTER"
-      style="-fx-padding: 20; -fx-background-color: #f0f0f0;">
+      style="-fx-padding: 20; -fx-background-image: url('file:///C:/Users/11628/IdeaProjects/demo/pic/main.png'); -fx-background-size: cover;">
 
-    <Label text="法宝图鉴" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+    <Label text="法宝图鉴" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-font-family: 'SimSun'; -fx-text-fill: #ffffff; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);"/>
 
     <ScrollPane fitToWidth="true" style="-fx-max-height: 400;">
         <VBox fx:id="vboxShop" spacing="10" style="-fx-padding: 10;"/>
     </ScrollPane>
 
     <Button text="返回" onAction="#closeShopPanel"
-            style="-fx-font-size: 14; -fx-pref-width: 100;"/>
+            style="-fx-font-size: 20; -fx-pref-width: 120; -fx-font-family: 'SimSun'; -fx-background-color: rgba(0, 0, 0, 0.3); -fx-border-color: #FFD700; -fx-border-width: 2px; -fx-border-radius: 10px; -fx-text-fill: #FFD700;"/>
 </VBox>
