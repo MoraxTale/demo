@@ -1,0 +1,35 @@
+package com.example.demo1;
+
+import java.io.Serializable;
+
+public class AdventureArea implements Serializable {
+    private final String name;
+    private final int unlockStage;
+    private final double clickBonus;
+    private final double qiRateBonus;
+    private boolean unlocked;
+    private boolean exploring;
+    private double progress;
+
+    public AdventureArea(String name, int unlockStage, double clickBonus, double qiRateBonus) {
+        this.name = name;
+        this.unlockStage = unlockStage;
+        this.clickBonus = clickBonus;
+        this.qiRateBonus = qiRateBonus;
+    }
+    public boolean isUnlocked() { return unlocked; }
+    public void setUnlocked(boolean unlocked) { this.unlocked = unlocked; }
+
+    public boolean isExploring() { return exploring; }
+    public void setExploring(boolean exploring) { this.exploring = exploring; }
+
+    public double getProgress() { return progress; }
+    public void setProgress(double progress) { this.progress = progress; }
+
+    public double getClickBonus() { return clickBonus; }
+    public double getQiRateBonus() { return qiRateBonus; }
+    public int getUnlockStage() { return unlockStage; }
+
+    public String getName() { return name; };
+    public String getAdventuresArea() {return name;};
+}
