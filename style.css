@@ -1,0 +1,19 @@
+.body-font {
+    -fx-font-family: "Microsoft YaHei";
+    -fx-font-size: 14px;
+}
+
+.insets {
+    -fx-padding: 10px;
+}
+
+.list-cell {
+    -fx-background-color: #363636;
+    -fx-padding: 10px;
+    -fx-border-color: #454545;
+    -fx-border-width: 0 0 1 0;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: #404040;
+}
