@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo1;
 
 // 导入 Java 序列化相关类
 import java.io.Serializable;
@@ -25,18 +25,21 @@ public class GameState implements Serializable {
     private Map<String, TreasureData> treasures; // 新增：法宝数据字段
     /**
      * 构造方法，初始化游戏状态对象
-     * @param qi 当前灵气值
-     * @param qiRate 当前灵气增长速度
-     * @param pills 炼丹数据
+     *
+     * @param qi         当前灵气值
+     * @param qiRate     当前灵气增长速度
+     * @param pills      炼丹数据
      * @param stageLevel 当前境界等级
+     * @param o
      */
-    public GameState(int qi, double qiRate, Map<String, AlchemyController.PillData> pills, Map<String, TreasureData> treasures,int stageLevel,long lastSaveTime) {
+    public GameState(int qi, double qiRate, Map<String, AlchemyController.PillData> pills, Map<String, TreasureData> treasures, int stageLevel, Object o, Map<String, AdventureArea>adventureAreas, long adventurearea) {
         this.qi = qi;
         this.qiRate = qiRate;
         this.pills = pills;
         this.stageLevel = stageLevel;
         this.treasures = treasures;
-        this.lastSaveTime = lastSaveTime; // 记录保存时间
+        this.lastSaveTime = lastSaveTime;
+        this.adventureAreas = adventureAreas;// 记录保存时间
     }
     /**
      * 获取当前灵气值的方法
@@ -84,5 +87,14 @@ public class GameState implements Serializable {
                 "GameState{qi=%d, qiRate=%.1f, pills=%s, stageLevel=%d}",
                 qi, qiRate, (pills != null ? pills.size() + " items" : "null"), stageLevel
         );
+    }
+    // GameState.java 新增
+    private Map<String, AdventureArea> adventureAreas;
+    public Map<String, AdventureArea> getAdventureAreas() {
+        return adventureAreas;
+    }
+
+    public long getAdventureStartTime() {
+    return 0;
     }
 }
