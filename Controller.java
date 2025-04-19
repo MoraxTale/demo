@@ -93,15 +93,30 @@ public class Controller {
         return stageLevel;
     }
 
+    public TreasureController getTreasureController() {
+        return treasureController;
+    }
+
+
     /**
      * 初始化方法，在 FXML 加载完成后自动调用，用于初始化界面元素和事件处理
      */
     @FXML
     private void initialize() {
         // 将灵气标签的文本属性绑定到灵气属性，实现自动更新显示
-        lblQi.textProperty().bind(qi.asString("灵气：%d"));
+        lblQi.textProperty().bind(
+                Bindings.createStringBinding(() ->
+                                "灵气：" + NumberFormatter.formatNumber(qi.get()),
+                        qi
+                )
+        );
         // 将灵气增长速度标签的文本属性绑定到灵气增长速度属性，实现自动更新显示
-        lblQiRate.textProperty().bind(qiRate.asString("灵气增长速度：%.1f/s"));
+        lblQiRate.textProperty().bind(
+                Bindings.createStringBinding(() ->
+                                "增速：" + NumberFormatter.formatNumber((long) qiRate.get()) + "/s",
+                        qiRate
+                )
+        );
         // 启动灵气自动增长的定时器
         startAutoQiGrowth();
         // 将境界标签的文本属性绑定到当前境界属性，实现自动更新显示
@@ -594,27 +609,34 @@ public class Controller {
     // 法宝管理方法
 
     public void applyTreasureEffects() {
-        double autoRate = 1.0; // 初始灵气增长速度
-        int clickBonus = 1000; // 初始点击加成
-        double successRateBonus = 0; // 初始渡劫成功率加成
+        // 重置为初始值
+        int totalClickBonus = 0;
+        double totalAutoRate = 0;
+        double totalSuccessRate = 0;
 
-        for (TreasureData treasure : treasureController.getTreasures().values()) {
-            switch (treasure.getEffectType()) {
-                case "AUTO_RATE":
-                    autoRate += treasure.getEffectValue();
-                    break;
-                case "CLICK_BONUS":
-                    clickBonus += (int) treasure.getEffectValue();
-                    break;
-                case "SUCCESS_RATE":
-                    successRateBonus += treasure.getEffectValue();
-                    break;
+        if (treasureController != null) {
+            for (TreasureData treasure : treasureController.getTreasures().values()) {
+                System.out.println("[DEBUG] 应用法宝效果：" + treasure.getId() +
+                        " Lv." + treasure.getLevel() +
+                        " 效果值:" + treasure.getEffectValue()); // 调试输出
+                switch (treasure.getEffectType()) {
+                    case "CLICK_BONUS":
+                        totalClickBonus += treasure.getEffectValue();
+                        break;
+                    case "AUTO_RATE":
+                        totalAutoRate += treasure.getEffectValue();
+                        break;
+                    case "SUCCESS_RATE":
+                        totalSuccessRate += treasure.getEffectValue();
+                        break;
+                }
             }
         }
 
-        qiRate.set(autoRate);
-        this.clickBonus = clickBonus;
-        actualSuccessRate.set(BASE_SUCCESS_RATE + successRateBonus);
+        this.clickBonus = totalClickBonus;
+        qiRate.set(1.0 + totalAutoRate);
+        actualSuccessRate.set(Math.min(BASE_SUCCESS_RATE + totalSuccessRate, 1.0));
+        System.out.println("[DEBUG] 最终效果 - 点击加成:" + clickBonus + " 自动增速:" + qiRate.get()); // 调试输出
     }
 
     public void addTreasureToBackpack(TreasureData treasure) {

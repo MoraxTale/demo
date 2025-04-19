@@ -33,6 +33,7 @@ public class TreasureController {
         treasures.putAll(newTreasures);
         updateTreasureDisplay();
     }
+
     @FXML
     public void initialize() {
         // 自定义Cell工厂
@@ -58,8 +59,10 @@ public class TreasureController {
                         upgradeButton.setDisable(true);
                         upgradeButton.setStyle("-fx-opacity: 0.7;");
                     } else {
-                        upgradeButton.setText("升级 (消耗 " + item.getUpgradeCost() + " 灵气)");
-                        upgradeButton.setStyle("-fx-background-color: #4a752c; -fx-text-fill: white;");
+                        // 修改按钮文本，添加当前法宝等级
+                        upgradeButton.setText(String.format("升级 (Lv.%d, 消耗 %d 灵气)", item.getLevel(), item.getUpgradeCost()));
+                        // 修改升级按钮样式为与购买按钮相同
+                        upgradeButton.setStyle("-fx-background-color: #FF5722; -fx-text-fill: white;");
                         upgradeButton.setOnAction(e -> {
                             item.upgrade(mainController);
                             updateTreasureDisplay(); // 刷新列表
@@ -73,15 +76,7 @@ public class TreasureController {
             }
         });
     }
-    private String buildDisplayText(TreasureData item) {
-        return String.format(
-                "【%s】Lv.%d\n效果：%s\n升级费用：%,d灵气",
-                item.getName(),
-                item.getLevel(),
-                item.getEffectDescription(),
-                item.getUpgradeCost()
-        );
-    }
+
 
     @FXML
     private void handleUpgrade() {
@@ -90,24 +85,24 @@ public class TreasureController {
             if (mainController.deductQi(selected.getUpgradeCost())) {
                 selected.upgrade(mainController);
                 updateTreasureDisplay();
-                mainController.updateActualSuccessRate(); // 更新成功率
+                mainController.applyTreasureEffects(); // 确保应用最新效果
+                mainController.updateActualSuccessRate();
             } else {
                 new Alert(Alert.AlertType.WARNING, "灵气不足，无法升级！").show();
             }
         }
     }
+
     // 更新法宝显示
     public void updateTreasureDisplay() {
         ObservableList<TreasureData> obtainedTreasures = FXCollections.observableArrayList();
-        // 过滤已获得的法宝（假设等级>0表示已获得）
         treasures.values().stream()
-                .filter(treasure -> treasure.getLevel() > 0)
-                .forEach(obtainedTreasures::add);
+                .filter(t -> t.getLevel() > 0)
+                .forEach(t -> {
+                    System.out.println("[DEBUG] 刷新列表项：" + t.getId() + " Lv." + t.getLevel()); // 调试输出
+                    obtainedTreasures.add(t);
+                });
         treasureListView.setItems(obtainedTreasures);
-
-        // 更新灵气增长速度
-        if (mainController != null) {
-            mainController.updateQiRate();
-        }
+        treasureListView.refresh(); // 强制刷新ListView
     }
 }

@@ -88,11 +88,11 @@ public class TreasureData implements Serializable {
 
     public void upgrade(Controller mainController) {
         if (mainController.deductQi(upgradeCost)) {
-            level++;
+            level++; // 确保等级递增
             // 不同法宝的强化逻辑
             switch (effectType) {
                 case "CLICK_BONUS":
-                    effectValue *= 1.2; // 每次升级提升20%
+                    effectValue *= 1.2;
                     break;
                 case "AUTO_RATE":
                     effectValue *= 1.15;
@@ -102,7 +102,8 @@ public class TreasureData implements Serializable {
                     break;
             }
             upgradeCost *= 1.5; // 升级费用增加50%
-            mainController.updateActualSuccessRate(); // 更新成功率
+            System.out.println("[DEBUG] 升级后数据 - 等级:" + level + " 效果值:" + effectValue); // 调试输出
+            mainController.applyTreasureEffects(); // 强制刷新效果
         }
     }
 
