@@ -1,32 +1,117 @@
 package com.example.demo;
 
+import java.io.Serial;
 import java.io.Serializable;
 
+// 法宝数据类
 public class TreasureData implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
-    private final String name;
-    private final String effect;
-    private final int purchaseCost; // 新增购买价格字段
+    private String id;
+    private String name;
+    private String description;
+    private String acquisitionMethod;
     private int level;
-    private int nextUpgradeCost;
+    private int upgradeCost;
+    private double power;
+    private String effectType; // 效果类型 CLICK_BONUS/AUTO_RATE/SUCCESS_RATE
+    private double effectValue; // 效果数值
+    private final int maxLevel = 10; // 最大等级
 
-    public TreasureData(String name, String effect, int purchaseCost, int baseUpgradeCost) {
+    public boolean isMaxLevel() {
+        return level >= maxLevel;
+    }
+
+    public TreasureData(String id, String name, String description,
+                        String acquisitionMethod, int upgradeCost,
+                        String effectType, double initialEffect)  {
+        this.id = id;
         this.name = name;
-        this.effect = effect;
-        this.purchaseCost = purchaseCost;
-        this.level = 0;
-        this.nextUpgradeCost = baseUpgradeCost;
+        this.description = description;
+        this.acquisitionMethod = acquisitionMethod;
+        this.level = 1;
+        this.upgradeCost = upgradeCost;
+        this.effectType = effectType;
+        this.effectValue = initialEffect;
     }
 
-    public void upgrade() {
-        level++;
-        nextUpgradeCost *= 1.5;
+    public String getId() {
+        return id;
     }
 
-    // Getters
-    public String getName() { return name; }
-    public String getEffect() { return effect; }
-    public int getPurchaseCost() { return purchaseCost; }
-    public int getLevel() { return level; }
-    public int getNextUpgradeCost() { return nextUpgradeCost; }
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getAcquisitionMethod() {
+        return acquisitionMethod;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    // 添加 setLevel 方法
+    public void setLevel(int level) {
+        if (level >= 1 && level <= maxLevel) {
+            this.level = level;
+        } else {
+            throw new IllegalArgumentException("法宝等级必须在 1 到 " + maxLevel + " 之间");
+        }
+    }
+
+    public int getUpgradeCost() {
+        return upgradeCost;
+    }
+
+    public double getPower() {
+        return power;
+    }
+
+    // 新增获取效果的方法
+    public String getEffectDescription() {
+        switch (effectType) {
+            case "CLICK_BONUS":
+                return String.format("每次点击+%d灵气", (int)effectValue);
+            case "AUTO_RATE":
+                return String.format("灵气增速+%.1f/s", effectValue);
+            case "SUCCESS_RATE":
+                return String.format("成功率+%.1f%%", effectValue*100);
+            default:
+                return "未知效果";
+        }
+    }
+
+    public void upgrade(Controller mainController) {
+        if (mainController.deductQi(upgradeCost)) {
+            level++;
+            // 不同法宝的强化逻辑
+            switch (effectType) {
+                case "CLICK_BONUS":
+                    effectValue *= 1.2; // 每次升级提升20%
+                    break;
+                case "AUTO_RATE":
+                    effectValue *= 1.15;
+                    break;
+                case "SUCCESS_RATE":
+                    effectValue *= 1.1;
+                    break;
+            }
+            upgradeCost *= 1.5; // 升级费用增加50%
+            mainController.updateActualSuccessRate(); // 更新成功率
+        }
+    }
+
+    // 添加getter方法
+    public String getEffectType() {
+        return effectType;
+    }
+
+    public double getEffectValue() {
+        return effectValue;
+    }
 }
