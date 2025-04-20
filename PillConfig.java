@@ -1,0 +1,23 @@
+package com.example.demo1;
+
+public class PillConfig {
+    private final String pillId;
+    private final String name;
+    private final int cost;
+    private final double rate;
+    private final double successRateImpact;
+    private final int level; // 新增丹药等级
+
+    public PillConfig(String pillId, String name, int cost, double rate,
+                      double successRateImpact, int level) {
+        this.pillId = pillId;
+        this.name = name;
+        this.cost = cost;
+        this.rate = rate;
+        this.successRateImpact = successRateImpact;
+        this.level = level;
+    }
+
+    // 添加getter
+    public int getLevel() { return level; }
+}

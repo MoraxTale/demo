@@ -1,6 +1,7 @@
 package com.example.demo1;
 
 // 导入 JavaFX FXML 相关类
+import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
 import javafx.fxml.FXML;
 // 导入 JavaFX 对话框相关类
 import javafx.scene.control.Alert;
@@ -13,9 +14,9 @@ import javafx.stage.Stage;
 import java.io.Serial;
 import java.io.Serializable;
 // 导入 Java 集合框架中的 LinkedHashMap 实现类和 Map 接口
+import  java. util. LinkedHashMap;
 import java.util.*;
-        import java.util.stream.Collectors;
-
+import java.util.stream.Collectors;
 /**
  * 炼丹控制器类，负责处理炼丹界面的逻辑和操作
  */
@@ -112,16 +113,105 @@ public class AlchemyController {
         customPills.clear();
         pillConfigMap.clear();
 
-        // 25级丹药，每级2种，共50种
+        // 第1级丹药 (凡人可用的基础丹药)
         addPillConfig(1, "pill_001", "聚气丹", 500, 0.5, 0.01);
         addPillConfig(1, "pill_002", "养元丹", 600, 0.6, 0.012);
 
+        // 第2级丹药 (炼气期)
         addPillConfig(2, "pill_003", "凝神丹", 800, 0.8, 0.015);
         addPillConfig(2, "pill_004", "固本丹", 1000, 1.0, 0.018);
 
-        addPillConfig(3, "pill_005", "牛逼丹", 1200,1.1,0.1);
-        addPillConfig(3,"pill_006","自爆丹",1300,1.2,0.12);
-        // ... 添加更多丹药配置 ...
+        // 第3级丹药 (筑基期)
+        addPillConfig(3, "pill_005", "洗髓丹", 1200, 1.2, 0.02);
+        addPillConfig(3, "pill_006", "通脉丹", 1500, 1.5, 0.025);
+
+        // 第4级丹药 (金丹期)
+        addPillConfig(4, "pill_007", "金丹丸", 2000, 2.0, 0.03);
+        addPillConfig(4, "pill_008", "玉液丹", 2500, 2.5, 0.035);
+
+        // 第5级丹药 (元婴期)
+        addPillConfig(5, "pill_009", "元婴造化丹", 3000, 3.0, 0.04);
+        addPillConfig(5, "pill_010", "九转还魂丹", 3500, 3.5, 0.045);
+
+        // 第6级丹药 (化神期)
+        addPillConfig(6, "pill_011", "化神丹", 4000, 4.0, 0.05);
+        addPillConfig(6, "pill_012", "天元神丹", 4500, 4.5, 0.055);
+
+        // 第7级丹药 (渡劫期)
+        addPillConfig(7, "pill_013", "渡劫丹", 5000, 5.0, 0.06);
+        addPillConfig(7, "pill_014", "避劫丹", 5500, 5.5, 0.065);
+
+        // 第8级丹药 (大乘期)
+        addPillConfig(8, "pill_015", "大乘玄丹", 6000, 6.0, 0.07);
+        addPillConfig(8, "pill_016", "乾坤一气丹", 7000, 7.0, 0.075);
+
+        // 第9级丹药 (大罗金仙)
+        addPillConfig(9, "pill_017", "大罗金丹", 8000, 8.0, 0.08);
+        addPillConfig(9, "pill_018", "混元丹", 9000, 9.0, 0.085);
+
+        // 第10级丹药 (仙君)
+        addPillConfig(10, "pill_019", "仙君玉丹", 10000, 10.0, 0.09);
+        addPillConfig(10, "pill_020", "太乙丹", 11000, 11.0, 0.095);
+
+        // 第11级丹药 (仙王)
+        addPillConfig(11, "pill_021", "仙王丹", 12000, 12.0, 0.10);
+        addPillConfig(11, "pill_022", "玄天丹", 13000, 13.0, 0.105);
+
+        // 第12级丹药 (仙帝)
+        addPillConfig(12, "pill_023", "仙帝丹", 14000, 14.0, 0.11);
+        addPillConfig(12, "pill_024", "紫霄丹", 15000, 15.0, 0.115);
+
+        // 第13级丹药 (仙尊)
+        addPillConfig(13, "pill_025", "仙尊丹", 16000, 16.0, 0.12);
+        addPillConfig(13, "pill_026", "九转金丹", 17000, 17.0, 0.125);
+
+        // 第14级丹药 (仙圣)
+        addPillConfig(14, "pill_027", "仙圣丹", 18000, 18.0, 0.13);
+        addPillConfig(14, "pill_028", "混沌丹", 19000, 19.0, 0.135);
+
+        // 第15级丹药 (仙祖)
+        addPillConfig(15, "pill_029", "仙祖丹", 20000, 20.0, 0.14);
+        addPillConfig(15, "pill_030", "鸿蒙丹", 22000, 22.0, 0.145);
+
+        // 第16级丹药 (道君)
+        addPillConfig(16, "pill_031", "道君丹", 24000, 24.0, 0.15);
+        addPillConfig(16, "pill_032", "太初丹", 26000, 26.0, 0.155);
+
+        // 第17级丹药 (道王)
+        addPillConfig(17, "pill_033", "道王丹", 28000, 28.0, 0.16);
+        addPillConfig(17, "pill_034", "玄黄丹", 30000, 30.0, 0.165);
+
+        // 第18级丹药 (道帝)
+        addPillConfig(18, "pill_035", "道帝丹", 32000, 32.0, 0.17);
+        addPillConfig(18, "pill_036", "造化丹", 34000, 34.0, 0.175);
+
+        // 第19级丹药 (道尊)
+        addPillConfig(19, "pill_037", "道尊丹", 36000, 36.0, 0.18);
+        addPillConfig(19, "pill_038", "天命丹", 38000, 38.0, 0.185);
+
+        // 第20级丹药 (道圣)
+        addPillConfig(20, "pill_039", "道圣丹", 40000, 40.0, 0.19);
+        addPillConfig(20, "pill_040", "永恒丹", 42000, 42.0, 0.195);
+
+        // 第21级丹药 (道祖)
+        addPillConfig(21, "pill_041", "道祖丹", 45000, 45.0, 0.20);
+        addPillConfig(21, "pill_042", "创世丹", 48000, 48.0, 0.205);
+
+        // 第22级丹药 (混元大罗金仙)
+        addPillConfig(22, "pill_043", "混元丹", 52000, 52.0, 0.21);
+        addPillConfig(22, "pill_044", "无极丹", 55000, 55.0, 0.215);
+
+        // 第23级丹药 (混元无极金仙)
+        addPillConfig(23, "pill_045", "无极金丹", 60000, 60.0, 0.22);
+        addPillConfig(23, "pill_046", "太虚丹", 65000, 65.0, 0.225);
+
+        // 第24级丹药 (混沌天尊)
+        addPillConfig(24, "pill_047", "混沌丹", 70000, 70.0, 0.23);
+        addPillConfig(24, "pill_048", "鸿蒙丹", 75000, 75.0, 0.235);
+
+        // 第25级丹药 (鸿蒙至尊)
+        addPillConfig(25, "pill_049", "鸿蒙至尊丹", 80000, 80.0, 0.24);
+        addPillConfig(25, "pill_050", "大道丹", 100000, 100.0, 0.25);
 
         updateAvailablePills();
     }
@@ -206,6 +296,7 @@ public class AlchemyController {
     /**
      * 更新丹药显示的方法
      */
+
     private void loadSavedPills() {
         // 先清空现有数据但保留配置
         Map<String, PillData> oldPills = new HashMap<>(pills);

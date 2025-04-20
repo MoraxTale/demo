@@ -1,21 +1,31 @@
 package com.example.demo1;
-
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-
+import java.util.Random;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class RandomEventHandler {
-    private static final double TRIGGER_CHANCE = 0.5; // 0.5%触发概率
-    private static final Random random = new Random();
+    private static final double TRIGGER_CHANCE = 0.9; // 0.5%触发概率
+    static final Random random = new Random();
     private Controller mainController;
     private enum NpcLevel {
         WEAKER,      // 比玩家弱
         EQUAL,       // 与玩家相当
         STRONGER     // 比玩家强
+    }
+    // **随机事件检查方法**
+    public void checkRandomEvent() {
+        if (random.nextDouble() < TRIGGER_CHANCE) {
+            System.out.println("[随机事件] 触发随机事件");
+            triggerRandomEvent();
+        } else {
+            System.out.println("[随机事件] 未触发");
+        }
     }
     // 获取随机丹药ID
     private String getRandomPillId() {
@@ -92,11 +102,7 @@ public class RandomEventHandler {
         }
     }
     // **随机事件检查方法**
-    public void checkRandomEvent() {
-        if (random.nextDouble() < TRIGGER_CHANCE) {
-            triggerRandomEvent();
-        }
-    }
+
 
     // **触发随机事件的方法**
     private void triggerRandomEvent() {
@@ -355,7 +361,7 @@ public class RandomEventHandler {
 
         int index = 0;
         for (AlchemyController.PillData pill : affordablePills) {
-            if (index >= 25) break; // 最多显示25种
+            if (index >= 50) break; // 最多显示25种
 
             Button pillButton = new Button();
             pillButton.setText(String.format("%s\n%d灵气", pill.pillName, pill.cost));
