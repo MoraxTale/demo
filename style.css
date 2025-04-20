@@ -1,19 +1,144 @@
-.body-font {
-    -fx-font-family: "Microsoft YaHei";
-    -fx-font-size: 14px;
+/* style.css 新增内容 */
+/* 按钮点击动态效果 */
+.button:pressed {
+    -fx-translate-y: 2px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
 }
 
-.insets {
-    -fx-padding: 10px;
+.circle-btn:pressed {
+    -fx-background-color: linear-gradient(#d4af37, #ffd700);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 3);
 }
 
-.list-cell {
-    -fx-background-color: #363636;
-    -fx-padding: 10px;
-    -fx-border-color: #454545;
-    -fx-border-width: 0 0 1 0;
+.rect-btn:pressed {
+    -fx-background-color: linear-gradient(#d4af37, #ffd700);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 1);
 }
 
-.list-cell:filled:hover {
-    -fx-background-color: #404040;
+.rect-btn-red:pressed {
+    -fx-background-color: linear-gradient(#ff6347, #ff4500);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 1);
 }
+
+/* 菜单栏右对齐 */
+.right-menu .label {
+    -fx-text-fill: white;
+    -fx-font-family: 'SimSun';
+}
+
+.right-menu {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 1);
+}
+
+/* 保留原有样式 */
+.status-label {
+    -fx-font-size: 18px;
+    -fx-font-family: 'SimSun';
+    -fx-text-fill: gold;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);
+}
+
+.circle-btn {
+    -fx-font-size: 24px;
+    -fx-pref-width: 120px;
+    -fx-pref-height: 120px;
+    -fx-background-radius: 60px;
+    -fx-background-color: linear-gradient(#ffd700, #d4af37);
+    -fx-border-color: #b8860b;
+    -fx-border-width: 2px;
+    -fx-border-radius: 60px;
+    -fx-text-fill: #2f4f4f;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 8, 0, 0, 2);
+}
+
+.rect-btn {
+    -fx-font-size: 16px;
+    -fx-pref-width: 100px;
+    -fx-pref-height: 60px;
+    -fx-background-radius: 5px;
+    -fx-background-color: linear-gradient(#ffd700, #d4af37);
+    -fx-border-color: #b8860b;
+    -fx-border-width: 2px;
+    -fx-text-fill: #2f4f4f;
+}
+
+.rect-btn-red {
+    -fx-font-size: 18px;
+    -fx-pref-width: 100px;
+    -fx-pref-height: 60px;
+    -fx-background-radius: 5px;
+    -fx-background-color: linear-gradient(#ff4500, #ff6347);
+    -fx-border-color: #8b0000;
+    -fx-border-width: 2px;
+    -fx-text-fill: white;
+}
+
+.transparent-pane {
+    -fx-background-color: rgba(0, 0, 0, 0.4);
+    -fx-background-radius: 10;
+    -fx-padding: 15;
+}
+/* 丹药界面专用样式 */
+.alchemy-title {
+    -fx-font-size: 28px;
+    -fx-font-family: 'SimSun';
+    -fx-text-fill: #ffd700;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);
+}
+
+/* 丹药按钮容器 */
+ .pill-btn {
+     -fx-pref-width: 280px;
+     -fx-pref-height: 80px;
+     -fx-background-color: linear-gradient(#4a4a4a, #363636);
+     -fx-border-color: #666666;
+     -fx-border-width: 1.5px;
+     -fx-border-radius: 8px;
+     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 5, 0, 2, 2);
+ }
+
+ /* 丹药名称 */
+ .pill-name {
+     -fx-font-family: 'SimSun';
+     -fx-font-size: 16px;
+     -fx-text-fill: #ffd700;
+     -fx-font-weight: bold;
+ }
+
+ /* 常规说明文字 */
+ .pill-detail {
+     -fx-font-family: 'SimSun';
+     -fx-font-size: 12px;
+     -fx-text-fill: #cccccc;
+ }
+
+ /* 小号说明文字 */
+ .pill-detail-small {
+     -fx-font-family: 'SimSun';
+     -fx-font-size: 10px;
+     -fx-text-fill: #aaaaaa;
+     -fx-line-spacing: -2px;
+ }
+ /* 修复滚动区域遮挡背景问题 */
+ .scroll-pane {
+     -fx-background-color: transparent;
+ }
+
+ .scroll-pane .viewport {
+     -fx-background-color: transparent;
+ }
+
+ .scroll-pane .scroll-bar:vertical,
+ .scroll-pane .scroll-bar:horizontal {
+     -fx-background-color: rgba(0,0,0,0.3);
+ }
+
+ .scroll-pane .scroll-bar .thumb {
+     -fx-background-color: rgba(255,215,0,0.5);
+     -fx-background-radius: 4px;
+ }
+
+ /* 确保 GridPane 透明 */
+ .grid-pills {
+     -fx-background-color: transparent;
+ }
