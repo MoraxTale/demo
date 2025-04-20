@@ -1,38 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
 
 <VBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.demo.AdventureController"
+      fx:controller="com.example.demo.BreakthroughDialogController"
       spacing="20"
       alignment="CENTER"
-      style="-fx-padding: 20; -fx-background-color: #f0e6d2;">
+      style="-fx-padding: 20; -fx-background-color: rgba(0,0,0,0.9); -fx-border-color: #4a752c;">
+    <Label text="【破境机缘】\n请选择你的道途："
+           style="-fx-text-fill: gold; -fx-font-size: 18px; -fx-wrap-text: true;"/>
 
-    <Label text="秘境探索" style="-fx-font-size: 24; -fx-font-family: 'SimSun'; -fx-text-fill: #8B4513;"/>
+    <Button fx:id="btnPath1" text="天道无情"
+            onAction="#handlePath1"
+            style="-fx-font-size: 14px; -fx-background-color: #2c3e50; -fx-text-fill: white;"/>
 
-    <HBox spacing="15" alignment="CENTER">
-        <Button text="迷雾森林" onAction="#handleArea1"
-                style="-fx-font-size: 14; -fx-pref-width: 100; -fx-pref-height: 80; -fx-font-family: 'SimSun';
-                       -fx-background-color: linear-gradient(#a5d6a7, #81c784); -fx-border-color: #4CAF50;"/>
-        <Button text="熔岩洞窟" onAction="#handleArea2"
-                style="-fx-font-size: 14; -fx-pref-width: 100; -fx-pref-height: 80; -fx-font-family: 'SimSun';
-                       -fx-background-color: linear-gradient(#ef9a9a, #e57373); -fx-border-color: #f44336;"/>
-        <Button text="虚空幻境" onAction="#handleArea3"
-                style="-fx-font-size: 14; -fx-pref-width: 100; -fx-pref-height: 80; -fx-font-family: 'SimSun';
-                       -fx-background-color: linear-gradient(#b39ddb, #9575cd); -fx-border-color: #673AB7;"/>
-    </HBox>
+    <Button fx:id="btnPath2" text="人道轮回"
+            onAction="#handlePath2"
+            style="-fx-font-size: 14px; -fx-background-color: #34495e; -fx-text-fill: white;"/>
 
-    <HBox spacing="15" alignment="CENTER">
-        <Button text="古神遗迹" onAction="#handleArea4"
-                style="-fx-font-size: 14; -fx-pref-width: 100; -fx-pref-height: 80; -fx-font-family: 'SimSun';
-                       -fx-background-color: linear-gradient(#bcaaa4, #a1887f); -fx-border-color: #795548;"/>
-        <Button text="无尽深渊" onAction="#handleArea5"
-                style="-fx-font-size: 14; -fx-pref-width: 100; -fx-pref-height: 80; -fx-font-family: 'SimSun';
-                       -fx-background-color: linear-gradient(#616161, #424242); -fx-border-color: #212121;"/>
-    </HBox>
-
-    <Label fx:id="lblResult" style="-fx-font-size: 16; -fx-font-family: 'SimSun'; -fx-text-fill: #8B0000;"/>
+    <Button fx:id="btnPath3" text="魔道噬心"
+            onAction="#handlePath3"
+            style="-fx-font-size: 14px; -fx-background-color: #2c2c2c; -fx-text-fill: white;"/>
 </VBox>
