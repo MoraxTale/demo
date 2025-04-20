@@ -151,10 +151,11 @@ public class TreasureShopController {
                     btn.setOnAction(e -> {
                         if (mainController.deductQi(treasure.getUpgradeCost())) {
                             // 获取实际法宝对象（原代码操作的是局部变量）
-
                             actualTreasure.upgrade(mainController); // 操作实际对象
                             loadShopTreasures();
                             new Alert(Alert.AlertType.INFORMATION, "升级成功！当前等级：" + actualTreasure.getLevel()).show();
+                        }else {
+                            new Alert(Alert.AlertType.WARNING, "灵气不足！").show();
                         }
                     });
                 }
