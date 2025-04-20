@@ -1,32 +1,88 @@
 package com.example.demo;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class StageStoryConfig {
-    // 境界等级 -> 剧情文本映射（可自由修改内容）
-    public static final Map<Integer, List<String>> STAGE_STORIES = new HashMap<>();
+/**
+ * 剧情独立状态管理类
+ * 功能：管理剧情相关状态，与原系统完全隔离
+ */
+public class StoryState {
+    private static StoryState instance;
 
-    static {
-        // 凡人 -> 炼气
-        STAGE_STORIES.put(1, List.of(
-                "【初入炼气】\n丹田中一缕灵气凝而不散，你正式踏入炼气期！",
-                "【炼气要诀】\n需每日吐纳，巩固根基。前方有灵草秘境可探索..."
-        ));
+    // 剧情独立状态
+    private int qi = 10000;          // 灵气值（示例初始值）
+    private int stageLevel = 2;      // 境界等级（示例初始值）
+    private Map<String, Integer> buffs = new HashMap<>(); // Buff状态
+    private Map<String, Integer> items = new HashMap<>(); // 物品库存
 
-        // 炼气 -> 筑基
-        STAGE_STORIES.put(2, List.of(
-                "【筑基大成】\n灵气化液，筑成道基！",
-                "【天道感应】\n识海中浮现《太虚筑基经》，需寻五行灵物..."
-        ));
+    // 私有构造器（防止外部实例化）
+    private StoryState() {}
 
-        // 筑基 -> 金丹
-        STAGE_STORIES.put(3, List.of(
-                "【金丹初成】\n丹田结出金丹，寿元增至五百载！",
-                "【丹劫警示】\n三年后将有雷劫，需炼制渡厄丹..."
-        ));
+    /**
+     * 获取单例实例
+     */
+    public static StoryState getInstance() {
+        if (instance == null) {
+            instance = new StoryState();
+        }
+        return instance;
+    }
 
-        // 其他境界依此类推...
+    //------------------------ 灵气操作 ------------------------
+    /**
+     * 扣除灵气
+     * @param amount 扣除数量
+     * @return 是否扣除成功
+     */
+    public boolean deductQi(int amount) {
+        if (qi >= amount) {
+            qi -= amount;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 增加灵气
+     * @param amount 增加数量
+     */
+    public void addQi(int amount) {
+        qi += amount;
+    }
+
+    //------------------------ 境界操作 ------------------------
+    /**
+     * 降低境界等级
+     */
+    public void decreaseStageLevel() {
+        stageLevel = Math.max(0, stageLevel - 1);
+    }
+
+    //------------------------ Buff管理 ------------------------
+    /**
+     * 添加Buff
+     * @param name Buff名称
+     * @param duration 持续次数
+     */
+    public void addBuff(String name, int duration) {
+        buffs.put(name, duration);
+    }
+
+    //------------------------ 物品管理 ------------------------
+    /**
+     * 添加物品
+     * @param item 物品名称
+     */
+    public void addItem(String item) {
+        items.put(item, items.getOrDefault(item, 0) + 1);
+    }
+
+    /**
+     * 获取物品数量
+     * @param item 物品名称
+     */
+    public int getItemCount(String item) {
+        return items.getOrDefault(item, 0);
     }
 }
