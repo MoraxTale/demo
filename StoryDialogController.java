@@ -1,32 +1,60 @@
 package com.example.demo;
 
-import java.util.HashMap;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+import javafx.stage.Window;
+
 import java.util.List;
-import java.util.Map;
 
-public class StageStoryConfig {
-    // 境界等级 -> 剧情文本映射（可自由修改内容）
-    public static final Map<Integer, List<String>> STAGE_STORIES = new HashMap<>();
+public class StoryDialogController {
+    @FXML private Label lblText;
+    @FXML private Button btnNext;
+    @FXML private VBox root;
 
-    static {
-        // 凡人 -> 炼气
-        STAGE_STORIES.put(1, List.of(
-                "【初入炼气】\n丹田中一缕灵气凝而不散，你正式踏入炼气期！",
-                "【炼气要诀】\n需每日吐纳，巩固根基。前方有灵草秘境可探索..."
-        ));
+    private List<String> storyPages; // 存储所有剧情文本
+    private int currentPage = 0;     // 当前显示的页面索引
 
-        // 炼气 -> 筑基
-        STAGE_STORIES.put(2, List.of(
-                "【筑基大成】\n灵气化液，筑成道基！",
-                "【天道感应】\n识海中浮现《太虚筑基经》，需寻五行灵物..."
-        ));
+    /**
+     * 初始化剧情数据
+     * @param pages 自定义的剧情文本列表（按顺序）
+     */
+    public void initStory(List<String> pages) {
+        this.storyPages = pages;
+        showPage(0); // 显示第一页
+    }
+    // 在 StoryDialogController 类中添加：
+    public void setCustomButtonText(String text, int targetPage) {
+        if (currentPage == targetPage) {
+            btnNext.setText(text);
+        }
+    }
 
-        // 筑基 -> 金丹
-        STAGE_STORIES.put(3, List.of(
-                "【金丹初成】\n丹田结出金丹，寿元增至五百载！",
-                "【丹劫警示】\n三年后将有雷劫，需炼制渡厄丹..."
-        ));
+    // 显示指定页面的文本
+    private void showPage(int pageIndex) {
+        if (pageIndex >= storyPages.size()) {
+            // 安全关闭窗口（通过已存在的组件获取窗口）
+            Window window = lblText.getScene().getWindow();
+            if (window != null) {
+                window.hide();
+            }
+            return;
+        }
+        lblText.setText(storyPages.get(pageIndex));
+        currentPage = pageIndex;
 
-        // 其他境界依此类推...
+        // 动态更新按钮文本
+        if (pageIndex == storyPages.size() - 1) {
+            btnNext.setText("关闭");
+        } else {
+            btnNext.setText("继续");
+        }
+    }
+
+    // 点击按钮切换到下一页
+    @FXML
+    private void handleNext() {
+        showPage(currentPage + 1);
     }
 }
