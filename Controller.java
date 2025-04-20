@@ -220,30 +220,7 @@ public class Controller {
             e.printStackTrace();
         }
     }
-    // 打开法宝界面
-    @FXML
-    public void openTreasurePanel() {
-        try {
-            if (treasureStage != null && treasureStage.isShowing()) {
-                treasureStage.requestFocus();
-                return;
-            }
 
-            if (treasureStage == null) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("TreasureView.fxml"));
-                Parent root = loader.load();
-                treasureStage = new Stage();
-                treasureStage.setTitle("我的法宝");
-                treasureStage.initModality(Modality.APPLICATION_MODAL);
-                treasureStage.initOwner(lblQi.getScene().getWindow());
-                treasureStage.setOnHidden(event -> treasureStage = null);
-                treasureStage.setScene(new Scene(root));
-            }
-            treasureStage.showAndWait();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
     // 检查是否已经拥有某个法宝
     public boolean hasTreasure(TreasureData treasure) {
         if (treasureController != null) {
