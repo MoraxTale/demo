@@ -1,6 +1,5 @@
 // 声明包名
 package com.example.demo1;
-
 // 导入 JavaFX 属性相关类，用于创建和管理可观察的属性
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
@@ -12,6 +11,7 @@ import javafx.animation.AnimationTimer;
 // 导入 JavaFX 属性相关类
 import javafx.beans.property.*;
 // 导入 JavaFX FXML 相关类，用于加载 FXML 文件和处理 FXML 元素
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 // 导入 JavaFX 场景图相关类
@@ -32,6 +32,8 @@ import javafx.stage.FileChooser;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static com.example.demo1.RandomEventHandler.random;
+
 /**
  * 主控制器类，负责处理游戏的主要逻辑和界面交互
  */
@@ -45,7 +47,7 @@ public class Controller {
     // 渡劫所需的灵气消耗，固定值
     private static final int BASE_BREAKTHROUGH_COST = 1000;
     private final DoubleProperty actualSuccessRate = new SimpleDoubleProperty(BASE_SUCCESS_RATE);
-
+    private long lastUpdate;
     // 以下是 FXML 中定义的界面元素，通过 @FXML 注解注入
     @FXML
     private Label lblStage; // 显示当前境界的标签
@@ -70,9 +72,9 @@ public class Controller {
     private RandomEventHandler randomEventHandler;
     // 炼丹界面的窗口对象
     private Stage alchemyStage;
-
+    private int clickBonus = 1000;
     // 当前境界属性，使用 JavaFX 的 StringProperty 实现可观察
-    private final StringProperty currentStage = new SimpleStringProperty("凡人初阶");
+    private final StringProperty currentStage = new SimpleStringProperty("凡人");
     // 渡劫成功率属性，使用 JavaFX 的 DoubleProperty 实现可观察
     private final DoubleProperty successRate = new SimpleDoubleProperty(BASE_SUCCESS_RATE);
     // 境界等级，凡人对应 0，炼气对应 1，以此类推
@@ -93,6 +95,9 @@ public class Controller {
     public int getStageLevel() {
         return stageLevel;
     }
+    public TreasureController getTreasureController() {
+        return treasureController;
+    }
     public int getQi() {
         return qi.get();
     }
@@ -104,9 +109,19 @@ public class Controller {
     @FXML
     private void initialize() {
         // 将灵气标签的文本属性绑定到灵气属性，实现自动更新显示
-        lblQi.textProperty().bind(qi.asString("灵气：%d"));
+        lblQi.textProperty().bind(
+                Bindings.createStringBinding(() ->
+                                "灵气：" + NumberFormatter.formatNumber(qi.get()),
+                        qi
+                )
+        );
         // 将灵气增长速度标签的文本属性绑定到灵气增长速度属性，实现自动更新显示
-        lblQiRate.textProperty().bind(qiRate.asString("灵气增长速度：%.1f/s"));
+        lblQiRate.textProperty().bind(
+                Bindings.createStringBinding(() ->
+                                "增速：" + NumberFormatter.formatNumber((long) qiRate.get()) + "/s",
+                        qiRate
+                )
+        );
         // 启动灵气自动增长的定时器
         startAutoQiGrowth();
         // 将境界标签的文本属性绑定到当前境界属性，实现自动更新显示
@@ -125,6 +140,7 @@ public class Controller {
         startAutoQiGrowth();
         initTreasurePanel();
         initTreasureShop();
+        initStarterTreasure();
 
         try {
             // 创建 FXMLLoader 对象，用于加载炼丹界面的 FXML 文件
@@ -139,9 +155,11 @@ public class Controller {
             System.err.println("炼丹控制器初始化失败: " + e.getMessage());
         }
     }
+
     public AlchemyController getAlchemyController() {
         return this.alchemyController;
     }
+
     // 添加以下方法到Controller类
     public String getPillStatus() {
         StringBuilder sb = new StringBuilder("当前丹药效果：\n");
@@ -155,6 +173,7 @@ public class Controller {
         }
         return sb.toString();
     }
+
     public void applyPillEffects() {
         // 重置基础属性
         double baseQiRate = 1.0 + (stageLevel * 0.5); // 基础修炼速度随境界提升
@@ -174,6 +193,7 @@ public class Controller {
         successRate.set(Math.max(0, Math.min(1, baseSuccessRate + totalSuccessBoost)));
         updateActualSuccessRate();
     }
+
     /**
      * 保存游戏方法，将当前游戏状态保存到指定文件
      *
@@ -216,6 +236,7 @@ public class Controller {
             System.err.println("保存游戏时出现 IO 错误。");
         }
     }
+
     private void initTreasurePanel() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("TreasureView.fxml")); // 正确加载背包界面
@@ -228,6 +249,7 @@ public class Controller {
             System.err.println("保存游戏时出现 IO 错误。");
         }
     }
+
     // 初始化法宝商店界面
     private void initTreasureShop() {
         try {
@@ -239,59 +261,42 @@ public class Controller {
             e.printStackTrace();
         }
     }
+
+    public boolean hasTreasure(TreasureData treasure) {
+        if (treasureController != null) {
+            return treasureController.getTreasures().containsKey(treasure.getId());
+        }
+        return false;
+    }
+
     // 打开法宝界面
     @FXML
-    public void openTreasurePanel() {
+    private void openTreasureShop() {
         try {
-            if (treasureStage != null && treasureStage.isShowing()) {
-                treasureStage.requestFocus();
-                return;
-            }
+            // 每次创建新的加载器和窗口
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("TreasureShopView.fxml"));
+            Parent root = loader.load();
 
-            if (treasureStage == null) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("TreasureView.fxml"));
-                Parent root = loader.load();
-                treasureStage = new Stage();
-                treasureStage.setTitle("我的法宝");
-                treasureStage.initModality(Modality.APPLICATION_MODAL);
-                treasureStage.initOwner(lblQi.getScene().getWindow());
-                treasureStage.setOnHidden(event -> treasureStage = null);
-                treasureStage.setScene(new Scene(root));
-            }
-            treasureStage.showAndWait();
+            // 关键步骤：获取控制器并设置主控制器
+            TreasureShopController shopController = loader.getController();
+            shopController.setMainController(this); // 传递当前 Controller 实例
+
+            Stage shopStage = new Stage();
+            shopStage.setTitle("法宝商店");
+            shopStage.initModality(Modality.APPLICATION_MODAL);
+            shopStage.initOwner(lblQi.getScene().getWindow()); // 设置父窗口
+            shopStage.setScene(new Scene(root));
+
+
+            shopStage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
+            new Alert(Alert.AlertType.ERROR, "无法打开法宝商店！").show();
         }
     }
-    // 打开法宝商店
-    @FXML
-    public void openTreasureShop() {
-        try {
-            if (treasureShopStage != null && treasureShopStage.isShowing()) {
-                treasureShopStage.requestFocus();
-                return;
-            }
-            if (treasureShopStage == null) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("TreasureShopView.fxml"));
-                Parent root = loader.load();
-                treasureShopStage = new Stage();
-                treasureShopStage.setTitle("法宝商店");
-                treasureShopStage.initModality(Modality.APPLICATION_MODAL);
-                treasureShopStage.initOwner(lblQi.getScene().getWindow());
-                treasureShopStage.setOnHidden(event -> treasureShopStage = null);
-                treasureShopStage.setScene(new Scene(root));
-            }treasureShopStage.showAndWait();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
     // 法宝管理方法
-    public void addTreasureToBackpack(TreasureData treasure) {
-        if (treasureController != null) {
-            treasureController.getTreasures().put(treasure.getName(), treasure);
-            treasureController.updateTreasureDisplay();
-        }
-    }
+
     public void updateActualSuccessRate() {
         double pillImpact = 0.0;
         if (alchemyController != null) {
@@ -357,7 +362,11 @@ public class Controller {
                 boolean showDialog = false;
                 String timeMessage = "";
                 int gainedQi = 0;
-
+                if (treasureController != null) {
+                    treasureController.setTreasures(state.getTreasures());
+                    treasureController.updateTreasureDisplay(); // 新增：加载后刷新
+                    applyTreasureEffects(); // 新增：效果生效
+                }
                 if (savedTime == 0L) {
                     // 旧存档处理
                     qi.set(state.getQi());
@@ -424,7 +433,7 @@ public class Controller {
                     savedPills.clear();
                     state.getPills().forEach((id, data) -> {
                         AlchemyController.PillData copiedData = new AlchemyController.PillData(
-                                data.pillId, data.pillName, data.cost, data.rate, data.successRateImpact,data.level);
+                                data.pillId, data.pillName, data.cost, data.rate, data.successRateImpact, data.level);
                         copiedData.count = data.count;
                         savedPills.put(id, copiedData);
                     });
@@ -508,33 +517,10 @@ public class Controller {
     /**
      * 启动灵气自动增长的定时器方法
      */
-    private void startAutoQiGrowth() {
-        // 创建动画计时器对象
-        AnimationTimer timer = new AnimationTimer() {
-            private long lastUpdate = 0;
-
-            @Override
-            public void handle(long now) {
-                if (now - lastUpdate >= 1_000_000_000) {
-                    // 如果距离上次更新超过 1 秒，增加灵气值
-                    qi.set(qi.get() + (int) qiRate.get());
-                    // 更新上次更新时间
-                    lastUpdate = now;
-                }
-            }
-        };
-        // 启动定时器
-        timer.start();
-    }
-
     /**
      * 渡劫逻辑方法
      */
-
-    private int getCurrentBreakthroughCost() {
-        // 基础消耗为10000，每次境界提升后翻倍
-        return BASE_BREAKTHROUGH_COST * (int) Math.pow(2, stageLevel);
-    }
+    
 
     @FXML
     private void breakthrough() {
@@ -549,7 +535,6 @@ public class Controller {
 
         updateActualSuccessRate();
         double currentActualRate = actualSuccessRate.get();
-
         if (Math.random() < currentActualRate) {
             if (stageLevel < STAGES.length - 1) {
                 stageLevel++;
@@ -560,6 +545,10 @@ public class Controller {
 
                 // 解锁新丹药
                 if (alchemyController != null) {
+                    alchemyController.getPills().values().forEach(pill -> {
+                        pill.successRateImpact *= 0.1;
+                    });
+                    alchemyController.loadPillsOnClick();
                     alchemyController.updateAvailablePills();
                     alchemyController.updatePillDisplay();
                 }
@@ -587,14 +576,6 @@ public class Controller {
     /**
      * 修炼方法，增加灵气值并检查随机事件
      */
-    @FXML
-    private void updataQi(int amount) {
-        // 增加灵气值
-        qi.set(qi.get() + amount);
-        // 检查是否触发随机事件
-        randomEventHandler.checkRandomEvent();
-    }
-
     /**
      * 打开炼丹界面的方法
      */
@@ -662,7 +643,45 @@ public class Controller {
         // 增加灵气增长速度
         qiRate.set(qiRate.get() + rate);
     }
+    public void applyTreasureEffects() {
+        // 重置为初始值
+        int totalClickBonus = 0;
+        double totalAutoRate = 0;
+        double totalSuccessRate = 0;
 
+        if (treasureController != null) {
+            for (TreasureData treasure : treasureController.getTreasures().values()) {
+                System.out.println("[DEBUG] 应用法宝效果：" + treasure.getId() +
+                        " Lv." + treasure.getLevel() +
+                        " 效果值:" + treasure.getEffectValue()); // 调试输出
+                switch (treasure.getEffectType()) {
+                    case "CLICK_BONUS":
+                        totalClickBonus += treasure.getEffectValue();
+                        break;
+                    case "AUTO_RATE":
+                        totalAutoRate += treasure.getEffectValue();
+                        break;
+                    case "SUCCESS_RATE":
+                        totalSuccessRate += treasure.getEffectValue();
+                        break;
+                }
+            }
+        }
+
+        this.clickBonus = totalClickBonus;
+        qiRate.set(1.0 + totalAutoRate);
+        actualSuccessRate.set(Math.min(BASE_SUCCESS_RATE + totalSuccessRate, 1.0));
+        System.out.println("[DEBUG] 最终效果 - 点击加成:" + clickBonus + " 自动增速:" + qiRate.get()); // 调试输出
+    }
+
+    public void addTreasureToBackpack(TreasureData treasure) {
+        if (treasureController != null) {
+            treasureController.getTreasures().put(treasure.getId(), treasure);
+            treasureController.updateTreasureDisplay();
+            System.out.println("[DEBUG] 添加法宝: " + treasure.getId());
+            applyTreasureEffects();
+        }
+    }
     /**
      * 更新灵气值的方法
      *
@@ -672,8 +691,6 @@ public class Controller {
         // 更新灵气值
         qi.set(qi.get() + amount);
     }
-
-
     // 新增方法：提供给其他类获取丹药数据
     public Map<String, AlchemyController.PillData> getSavedPills() {
         return savedPills;
@@ -712,5 +729,107 @@ public class Controller {
             e.printStackTrace();
         }
     }
+    private void initStarterTreasure() {
+        TreasureData starterTreasure = new TreasureData(
+                "WQX001",
+                "五禽戏秘籍",
+                "华佗所创养生功法，可强身健体",
+                "初始赠送",
+                500,
+                "CLICK_BONUS",
+                1000
+        );
+        starterTreasure.setLevel(1); // 初始等级设为1
+        treasureController.getTreasures().put(starterTreasure.getId(), starterTreasure);
+        treasureController.updateTreasureDisplay();
+    }
 
+    public void updateQiRate() {
+        double totalAutoRateBonus = 0;
+        // 遍历所有法宝，累加自动增速加成
+        if (treasureController != null) {
+            for (TreasureData treasure : treasureController.getTreasures().values()) {
+                if ("AUTO_RATE".equals(treasure.getEffectType())) {
+                    totalAutoRateBonus += treasure.getEffectValue();
+                }
+            }
+        }
+        // 更新灵气增长速度属性
+        qiRate.set(1.0 + totalAutoRateBonus);
+    }
+
+    //点击修炼按钮时增加灵气的方法
+    @FXML
+    private void updataQi(int baseBonus) {
+        // 基础灵气增加
+        int totalBonus = baseBonus + calculateClickBonus();
+        qi.set(qi.get() + totalBonus);
+
+        // 每次点击有30%概率触发随机事件
+        if (randomEventHandler != null && random.nextDouble() < 0.9) {
+            randomEventHandler.checkRandomEvent();
+        }
+    }
+
+// 修改btnCultivate的事件处理
+
+
+    private int calculateClickBonus() {
+        return treasureController.getTreasures().values().stream()
+                .filter(t -> "CLICK_BONUS".equals(t.getEffectType()))
+                .mapToInt(t -> (int)t.getEffectValue())
+                .sum();
+    }
+    // 修改自动增长逻辑
+    private void startAutoQiGrowth() {
+        new AnimationTimer() {
+            private long lastUpdate = 0;
+            private long lastEventCheck = 0;
+            @Override
+            public void handle(long now) {
+                if (lastUpdate == 0) {
+                    lastUpdate = now;
+                    lastEventCheck = now;
+                    return;
+                }
+                long delta = now - lastUpdate;
+                if (delta >= 1_000_000_000) { // 每秒更新一次
+                    double totalAutoRateBonus = 0;
+                    // 遍历所有法宝，累加自动增速加成
+                    if (treasureController != null) {
+                        for (TreasureData treasure : treasureController.getTreasures().values()) {
+                            if ("AUTO_RATE".equals(treasure.getEffectType())) {
+                                totalAutoRateBonus += treasure.getEffectValue();
+                            }
+                        }
+                    }
+                    // 应用基础灵气增长速度和法宝加成
+                    qi.set(qi.get() + (int) (qiRate.get() + totalAutoRateBonus));
+                    lastUpdate = now;
+                }
+                long eventDelta = now - lastEventCheck;
+
+            }
+        }.start();
+    }
+
+    private double calculateAutoBonus() {
+        return treasureController.getTreasures().values().stream()
+                .filter(t -> "AUTO_RATE".equals(t.getEffectType()))
+                .mapToDouble(TreasureData::getEffectValue)
+                .sum();
+    }
+    private int getCurrentBreakthroughCost() {
+        // 基础消耗为10000，每次境界提升后翻倍
+        return BASE_BREAKTHROUGH_COST * (int) Math.pow(2, stageLevel);
+    }
+    public int getClickBonus() {
+        return clickBonus;
+    }
+
+    public void openTreasurePanel(ActionEvent actionEvent) {
+    }
 }
+
+
+
