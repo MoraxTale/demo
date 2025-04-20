@@ -49,32 +49,32 @@ public class RandomEventHandler {
     }
 
 
-        private void handlePillReward(int count) {
-            int playerLevel = mainController.getStageLevel();
-            int maxRewardLevel = Math.min(25, playerLevel + 1);
+    private void handlePillReward(int count) {
+        int playerLevel = mainController.getStageLevel();
+        int maxRewardLevel = Math.min(25, playerLevel + 1);
 
-            // 获取所有可奖励的丹药
-            List<AlchemyController.PillData> rewardablePills = new ArrayList<>();
-            Map<String, AlchemyController.PillData> savedPills = mainController.getSavedPills();
+        // 获取所有可奖励的丹药
+        List<AlchemyController.PillData> rewardablePills = new ArrayList<>();
+        Map<String, AlchemyController.PillData> savedPills = mainController.getSavedPills();
 
-            for (AlchemyController.PillData pill : savedPills.values()) {
-                AlchemyController.PillConfig config = mainController.getAlchemyController().getPillConfig(pill.pillId);
-                if (config != null && config.getLevel() <= maxRewardLevel) {
-                    rewardablePills.add(pill);
-                }
-            }
-
-            if (!rewardablePills.isEmpty()) {
-                AlchemyController.PillData pill = rewardablePills.get(random.nextInt(rewardablePills.size()));
-                pill.count += count;
-                String currentEffects = mainController.getPillStatus();
-                showRewardAlert("✨ 获得 " + count + " 颗" + pill.pillName + "\n\n" + currentEffects);
-            } else {
-                int qiGain = getQiChangeRange()[1] * count;
-                mainController.updateQi(qiGain);
-                showRewardAlert("获得 " + qiGain + " 点灵气");
+        for (AlchemyController.PillData pill : savedPills.values()) {
+            AlchemyController.PillConfig config = mainController.getAlchemyController().getPillConfig(pill.pillId);
+            if (config != null && config.getLevel() <= maxRewardLevel) {
+                rewardablePills.add(pill);
             }
         }
+
+        if (!rewardablePills.isEmpty()) {
+            AlchemyController.PillData pill = rewardablePills.get(random.nextInt(rewardablePills.size()));
+            pill.count += count;
+            String currentEffects = mainController.getPillStatus();
+            showRewardAlert("✨ 获得 " + count + " 颗" + pill.pillName + "\n\n" + currentEffects);
+        } else {
+            int qiGain = getQiChangeRange()[1] * count;
+            mainController.updateQi(qiGain);
+            showRewardAlert("获得 " + qiGain + " 点灵气");
+        }
+    }
 
     private void handlePillPenalty(int count) {
         String pillId = getRandomPillId();
@@ -332,7 +332,7 @@ public class RandomEventHandler {
     }
     //新增显示可购买丹药的弹窗方法
     private void showPillPurchaseDialog() {
-        int currentQi = mainController.getQi();
+        long currentQi = mainController.getQi();
 
         // 1. 检查炼丹控制器
         if (mainController.getAlchemyController() == null) {

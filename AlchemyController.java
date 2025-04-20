@@ -1,47 +1,52 @@
 package com.example.demo1;
 
 // 导入 JavaFX FXML 相关类
-import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 // 导入 JavaFX 对话框相关类
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
 // 导入 JavaFX 布局相关类
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.VBox;
 // 导入 JavaFX 窗口相关类
 import javafx.stage.Stage;
 // 导入 Java 序列化相关类
 import java.io.Serial;
 import java.io.Serializable;
 // 导入 Java 集合框架中的 LinkedHashMap 实现类和 Map 接口
-import  java. util. LinkedHashMap;
 import java.util.*;
 import java.util.stream.Collectors;
+
 /**
  * 炼丹控制器类，负责处理炼丹界面的逻辑和操作
  */
 public class AlchemyController {
+    @FXML
+    private ScrollPane scrollPane; // 新增绑定
     // FXML 中定义的垂直布局容器，用于显示丹药按钮
     @FXML
     private GridPane gridPills;
+    // 保存滚动位置
+    private double lastScrollPosition = 0.0;
+
     // 主控制器对象，用于与主游戏逻辑交互
     private Controller mainController;
     // 丹药数据映射，存储每种丹药的信息
 
+    private Map<String, PillData> pills = new LinkedHashMap<>();
     private List<PillConfig> availablePills = new ArrayList<>();
     private final Map<String, PillConfig> pillConfigMap = new HashMap<>();
     private final List<PillConfig> customPills = new ArrayList<>();
-    private final Map<String, PillData> pills = new LinkedHashMap<>();
-
     // 添加方法获取丹药配置
     public PillConfig getPillConfig(String pillId) {
         return pillConfigMap.get(pillId);
     }
-
     /**
      * 丹药数据内部类，用于存储丹药的成本、成功率和购买数量
      */
-
     // 丹药配置类（包含唯一ID）
     public static class PillConfig {
         private final String pillId;
@@ -67,7 +72,8 @@ public class AlchemyController {
 
     }
 
-    // 丹药数据类（包含唯一ID和名称）
+
+    /// 丹药数据类（包含唯一ID和名称）
 
     public static class PillData implements Serializable {
         // 序列化版本号，确保序列化和反序列化的兼容性
@@ -98,14 +104,13 @@ public class AlchemyController {
         }
     }
 
-
     /**
      * 设置主控制器的方法
      * @param controller 主控制器对象
      */
     public void setMainController(Controller controller) {
-        // 加载丹药数据
         this.mainController = controller;
+        // 加载丹药数据
         initializeCustomPills();
     }
     // 初始化自定义丹药（示例数据）
@@ -215,8 +220,6 @@ public class AlchemyController {
 
         updateAvailablePills();
     }
-
-
     // 更新可用丹药列表
     public void updateAvailablePills() {
         int playerLevel = mainController != null ? mainController.getStageLevel() : 0;
@@ -258,7 +261,6 @@ public class AlchemyController {
             }
         }
     }
-
     // 修改getPills方法只返回可用丹药
     public Map<String, PillData> getPills() {
         Map<String, PillData> result = new LinkedHashMap<>();
@@ -284,19 +286,19 @@ public class AlchemyController {
     /**
      * 加载丹药数据的方法
      */
-
     public void loadPillsOnClick() {
         // 如果主控制器有已保存的丹药数据，优先加载
         if (mainController != null && !mainController.getSavedPills().isEmpty()) {
             loadSavedPills();
-        }
+        } else {
+            generateNewPills();
+        }// 更新丹药显示
         updateAvailablePills();
         updatePillDisplay();
     }
     /**
      * 更新丹药显示的方法
      */
-
     private void loadSavedPills() {
         // 先清空现有数据但保留配置
         Map<String, PillData> oldPills = new HashMap<>(pills);
@@ -349,30 +351,91 @@ public class AlchemyController {
         }
     }
 
+
     void updatePillDisplay() {
-        // 更新5x5界面
+        // 1. 保存当前滚动位置（必须在清空内容前获取）
+        lastScrollPosition = scrollPane.getVvalue();
+
+        // 2. 清空旧内容
         gridPills.getChildren().clear();
+        gridPills.getColumnConstraints().clear();
+        gridPills.getRowConstraints().clear();
+
+        // 3. 重建两列布局
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPercentWidth(50);
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setPercentWidth(50);
+        gridPills.getColumnConstraints().addAll(col1, col2);
+
+        // 4. 动态生成按钮
         int index = 0;
         for (Map.Entry<String, PillData> entry : pills.entrySet()) {
-            if (index >= 25) break;
+            int row = index / 2;
+            int col = index % 2;
 
 
-
-            int row = index / 5;
-            int col = index % 5;
             PillData data = entry.getValue();
+
+            // 使用 VBox 包装多行文本
+            VBox container = new VBox(3);
+            container.setAlignment(Pos.CENTER);
+
+            Label nameLabel = new Label(data.pillName);
+            nameLabel.getStyleClass().add("pill-name");
+
+            Label countLabel = new Label("数量: " + data.count);
+            countLabel.getStyleClass().add("pill-detail");
+
+            Label effectLabel = new Label(
+                    String.format("灵气增速 +%.1f/s\n成功率 +%.1f%%", data.rate, data.successRateImpact * 100)
+            );
+            effectLabel.getStyleClass().add("pill-detail-small"); // 小号字体
+
             Button btn = new Button();
-            btn.setStyle("-fx-font-size: 12; -fx-pref-width: 150; -fx-background-color: lightblue;");
-            btn.setText(String.format("%s\n已购%d个\n灵气速度+%.1f\n成功率+%.1f%%\n所需灵气%d",
-                    data.pillName, data.count, data.rate, data.successRateImpact * 100,data.cost));
+            btn.getStyleClass().add("pill-btn");
+            btn.setGraphic(container); // 将文本内容设置为按钮的图形
+            btn.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
             btn.setOnAction(e -> buyPill(entry.getKey(), data));
+
+            container.getChildren().addAll(nameLabel, countLabel, effectLabel);
+
+            // 动态添加行约束
+            if (row >= gridPills.getRowConstraints().size()) {
+                RowConstraints rc = new RowConstraints();
+                rc.setPrefHeight(90);
+                gridPills.getRowConstraints().add(rc);
+            }
 
             gridPills.add(btn, col, row);
             index++;
         }
 
-    }
+        // 5. 精准恢复滚动位置
+        Platform.runLater(() -> {
+            // 强制布局计算
+            scrollPane.layout();
+            gridPills.layout();
 
+            // 计算有效位置
+            double validPosition = Math.min(lastScrollPosition, 1.0);
+            validPosition = Math.max(validPosition, 0.0);
+
+            // 分步设置确保生效
+            scrollPane.setVvalue(0.0); // 先重置到顶部
+            scrollPane.setVvalue(validPosition); // 再设置目标位置
+            double finalValidPosition = validPosition;
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    Platform.runLater(() -> {
+                        scrollPane.setVvalue(finalValidPosition);
+                    });
+                }
+            }, 50); // 50ms延迟
+        });
+
+    }
     /**
      * 购买丹药的方法
      * @param pillId 丹药 ID
@@ -404,6 +467,8 @@ public class AlchemyController {
             new Alert(Alert.AlertType.WARNING, "灵气不足！").showAndWait();
         }
     }
+
+
 
 
 

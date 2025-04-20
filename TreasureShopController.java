@@ -1,4 +1,5 @@
 package com.example.demo1;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -6,6 +7,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+
 import java.util.*;
 
 public class TreasureShopController {
@@ -83,15 +85,25 @@ public class TreasureShopController {
 
     // 生成提示文本
     private String formatTooltipText(TreasureData treasure) {
+        String effectDesc;
+        if ("AUTO_RATE".equals(treasure.getEffectType())) {
+            effectDesc = String.format("修炼速度+%.1f%%", treasure.getEffectPercentage() * 100);
+        } else {
+            effectDesc = treasure.getEffectDescription();
+        }
+
         return String.format(
-                "【%s】Lv.%d\n效果：%s\n描述：%s\n当前状态：%s",
+                "【%s】Lv.%d/%d\n效果：%s\n描述：%s\n升级需要：%d灵气\n%s",
                 treasure.getName(),
-                treasure.getLevel(), // 显示当前等级
-                treasure.getEffectDescription(), // 自动使用最新effectValue
+                treasure.getLevel(),
+                treasure.getMaxLevel(),
+                effectDesc,
                 treasure.getDescription(),
+                treasure.getUpgradeCost(),
                 mainController.hasTreasure(treasure) ? "已拥有" : "未购买"
         );
     }
+
 
     public void loadShopTreasures() {
         if (mainController == null) {
@@ -117,7 +129,16 @@ public class TreasureShopController {
                         "商店购买",
                         1000,
                         "AUTO_RATE",
-                        5.0
+                        0.10
+                ),
+                new TreasureData(
+                        "SJ004",
+                        "时空塔",
+                        "可延长修炼时间的逆天法宝",
+                        "商店购买",
+                        2000,
+                        "OFFLINE_TIME",
+                        60 // 基础加60秒
                 )
         );
         // 添加空值检查
@@ -147,12 +168,13 @@ public class TreasureShopController {
                     btn.setText(actualTreasure.getName() + " (Lv." + actualTreasure.getLevel() + " 升级)");
                     btn.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-text-fill: #e6d8a9; -fx-font-size: 14px;");
                     btn.setOnAction(e -> {
-                        if (mainController.deductQi(treasure.getUpgradeCost())) {
-                            // 获取实际法宝对象（原代码操作的是局部变量）
-
+                        if (mainController.deductQi(actualTreasure.getUpgradeCost())) {
                             actualTreasure.upgrade(mainController); // 操作实际对象
                             loadShopTreasures();
-                            new Alert(Alert.AlertType.INFORMATION, "升级成功！当前等级：" + actualTreasure.getLevel()).show();
+                            new Alert(Alert.AlertType.INFORMATION,
+                                    "升级成功！当前效果：" + actualTreasure.getEffectDescription()).show();
+                        } else {
+                            new Alert(Alert.AlertType.WARNING, "灵气不足！").show();
                         }
                     });
                 }
@@ -197,7 +219,17 @@ public class TreasureShopController {
         result.ifPresent(buttonType -> {
             if (buttonType == ButtonType.OK) {
                 if (mainController.deductQi(treasure.getUpgradeCost())) {
-                    mainController.addTreasureToBackpack(treasure);
+                    // 创建新的法宝实例添加到背包
+                    TreasureData newTreasure = new TreasureData(
+                            treasure.getId(),
+                            treasure.getName(),
+                            treasure.getDescription(),
+                            treasure.getAcquisitionMethod(),
+                            treasure.getUpgradeCost(),
+                            treasure.getEffectType(),
+                            treasure.getEffectPercentage()
+                    );
+                    mainController.addTreasureToBackpack(newTreasure);
                     new Alert(Alert.AlertType.INFORMATION, "购买成功！").show();
                     // 购买成功后更新商店界面
                     loadShopTreasures();

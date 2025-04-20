@@ -3,6 +3,8 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Label?>
 
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
 <VBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.demo1.TreasureController"
@@ -10,7 +12,13 @@
       alignment="CENTER"
       style="-fx-padding: 20; -fx-background-image: url('file:///C:/Users/21467/Desktop/demo1/pic/main.png'); -fx-background-size: cover;">
 
-    <Label text="我的法宝" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-font-family: 'SimSun'; -fx-text-fill: #ffffff; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);"/>
+    <Label text="我的法宝" style="-fx-font-size: 24px; -fx-text-fill: gold; -fx-font-weight: bold;"/>
 
-    <ListView fx:id="treasureListView" style="-fx-pref-height: 400; -fx-background-color: rgba(0, 0, 0, 0.3); -fx-border-color: #FFD700; -fx-border-width: 2px; -fx-border-radius: 10px;"/>
+    <ScrollPane fitToWidth="true" style="-fx-max-height: 400; -fx-background: transparent;">
+        <ListView fx:id="treasureListView"
+                  style="-fx-background-color: rgba(0,0,0,0.5); -fx-border-width: 0;"
+                  fixedCellSize="80"/> <!-- 固定行高确保滚动条计算准确 -->
+    </ScrollPane>
+    <Button text="升级选中法宝" onAction="#handleUpgrade"
+            style="-fx-font-size: 16px; -fx-background-color: #4a752c; -fx-text-fill: white;"/>
 </VBox>
