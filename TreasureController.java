@@ -1,32 +1,108 @@
 package com.example.demo;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-public class StageStoryConfig {
-    // 境界等级 -> 剧情文本映射（可自由修改内容）
-    public static final Map<Integer, List<String>> STAGE_STORIES = new HashMap<>();
+public class TreasureController {
 
-    static {
-        // 凡人 -> 炼气
-        STAGE_STORIES.put(1, List.of(
-                "【初入炼气】\n丹田中一缕灵气凝而不散，你正式踏入炼气期！",
-                "【炼气要诀】\n需每日吐纳，巩固根基。前方有灵草秘境可探索..."
-        ));
+    @FXML
+    private ListView<TreasureData> treasureListView; // 必须指定泛型类型
+    private Controller mainController;
+    private final Map<String, TreasureData> treasures = new LinkedHashMap<>();
 
-        // 炼气 -> 筑基
-        STAGE_STORIES.put(2, List.of(
-                "【筑基大成】\n灵气化液，筑成道基！",
-                "【天道感应】\n识海中浮现《太虚筑基经》，需寻五行灵物..."
-        ));
+    public void setMainController(Controller mainController) {
+        this.mainController = mainController;
+        updateTreasureDisplay();
+    }
 
-        // 筑基 -> 金丹
-        STAGE_STORIES.put(3, List.of(
-                "【金丹初成】\n丹田结出金丹，寿元增至五百载！",
-                "【丹劫警示】\n三年后将有雷劫，需炼制渡厄丹..."
-        ));
+    public Map<String, TreasureData> getTreasures() {
+        return treasures;
+    }
 
-        // 其他境界依此类推...
+    public void setTreasures(Map<String, TreasureData> newTreasures) {
+        treasures.clear();
+        treasures.putAll(newTreasures);
+        updateTreasureDisplay();
+    }
+
+    @FXML
+    public void initialize() {
+        // 自定义Cell工厂
+        treasureListView.setCellFactory(lv -> new ListCell<TreasureData>() {
+            @Override
+            protected void updateItem(TreasureData item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    VBox vbox = new VBox(5);
+                    // 显示名称、等级和效果
+                    Label nameLabel = new Label(String.format("【%s】Lv.%d", item.getName(), item.getLevel()));
+                    Label effectLabel = new Label("效果：" + item.getEffectDescription());
+                    nameLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: gold;");
+                    effectLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #e6d8a9;");
+
+                    // 动态按钮状态
+                    Button upgradeButton = new Button();
+                    if (item.isMaxLevel()) {
+                        upgradeButton.setText("已满级");
+                        upgradeButton.setDisable(true);
+                        upgradeButton.setStyle("-fx-opacity: 0.7;");
+                    } else {
+                        // 修改按钮文本，添加当前法宝等级
+                        upgradeButton.setText(String.format("升级 (Lv.%d, 消耗 %d 灵气)", item.getLevel(), item.getUpgradeCost()));
+                        // 修改升级按钮样式为与购买按钮相同
+                        upgradeButton.setStyle("-fx-background-color: #FF5722; -fx-text-fill: white;");
+                        upgradeButton.setOnAction(e -> {
+                            item.upgrade(mainController);
+                            updateTreasureDisplay(); // 刷新列表
+                            mainController.updateActualSuccessRate();
+                        });
+                    }
+
+                    vbox.getChildren().addAll(nameLabel, effectLabel, upgradeButton);
+                    setGraphic(vbox);
+                }
+            }
+        });
+    }
+
+
+    @FXML
+    private void handleUpgrade() {
+        TreasureData selected = treasureListView.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            if (mainController.deductQi(selected.getUpgradeCost())) {
+                selected.upgrade(mainController);
+                updateTreasureDisplay();
+                mainController.applyTreasureEffects(); // 确保应用最新效果
+                mainController.updateActualSuccessRate();
+            } else {
+                new Alert(Alert.AlertType.WARNING, "灵气不足，无法升级！").show();
+            }
+        }
+    }
+
+    // 更新法宝显示
+    public void updateTreasureDisplay() {
+        ObservableList<TreasureData> obtainedTreasures = FXCollections.observableArrayList();
+        treasures.values().stream()
+                .filter(t -> t.getLevel() > 0)
+                .forEach(t -> {
+                    System.out.println("[DEBUG] 刷新列表项：" + t.getId() + " Lv." + t.getLevel()); // 调试输出
+                    obtainedTreasures.add(t);
+                });
+        treasureListView.setItems(obtainedTreasures);
+        treasureListView.refresh(); // 强制刷新ListView
     }
 }
