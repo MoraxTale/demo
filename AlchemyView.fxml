@@ -9,31 +9,29 @@
 <VBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.demo.AlchemyController"
-      spacing="10"
+      spacing="15"
       alignment="CENTER"
-      style="-fx-padding: 20; -fx-background-image: url('file:///C:/Users/11628/IdeaProjects/demo/pic/main.png'); -fx-background-size: cover;">
+      style="-fx-padding: 25; -fx-background-image: url('file:///C:/Users/11628/IdeaProjects/demo/pic/main.png'); -fx-background-size: cover;">
 
-    <Label text="丹药列表（五五玄阵）" style="-fx-font-size: 18;"/>
-    <GridPane fx:id="gridPills"
-              hgap="5" vgap="5"
-              style="-fx-padding: 10;">
-        <!-- 定义5列等宽 -->
+    <Label text="丹药列表（五五玄阵）" style="-fx-font-size: 24; -fx-font-family: 'SimSun'; -fx-text-fill: #ffd700; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);"/>
+
+    <GridPane fx:id="gridPills" hgap="10" vgap="10" style="-fx-padding: 15; -fx-background-color: rgba(0,0,0,0.4); -fx-background-radius: 10;">
         <columnConstraints>
-            <ColumnConstraints percentWidth="20"/>
-            <ColumnConstraints percentWidth="20"/>
-            <ColumnConstraints percentWidth="20"/>
-            <ColumnConstraints percentWidth="20"/>
-            <ColumnConstraints percentWidth="20"/>
+            <ColumnConstraints percentWidth="20" halignment="CENTER"/>
+            <ColumnConstraints percentWidth="20" halignment="CENTER"/>
+            <ColumnConstraints percentWidth="20" halignment="CENTER"/>
+            <ColumnConstraints percentWidth="20" halignment="CENTER"/>
+            <ColumnConstraints percentWidth="20" halignment="CENTER"/>
         </columnConstraints>
-        <!-- 定义5行等高 -->
         <rowConstraints>
-            <RowConstraints percentHeight="20"/>
-            <RowConstraints percentHeight="20"/>
-            <RowConstraints percentHeight="20"/>
-            <RowConstraints percentHeight="20"/>
-            <RowConstraints percentHeight="20"/>
+            <RowConstraints percentHeight="20" valignment="CENTER"/>
+            <RowConstraints percentHeight="20" valignment="CENTER"/>
+            <RowConstraints percentHeight="20" valignment="CENTER"/>
+            <RowConstraints percentHeight="20" valignment="CENTER"/>
+            <RowConstraints percentHeight="20" valignment="CENTER"/>
         </rowConstraints>
     </GridPane>
+
     <Button text="返回" onAction="#closeAlchemyPanel"
-            style="-fx-font-size: 20; -fx-pref-width: 120; -fx-alignment: CENTER; -fx-padding: 10 0; -fx-font-family: 'SimSun'; -fx-background-color: rgba(0, 0, 0, 0.3); -fx-border-color: #FFD700; -fx-border-width: 2px; -fx-border-radius: 10px; -fx-text-fill: #FFD700;"/>
+            style="-fx-font-size: 18; -fx-pref-width: 120; -fx-font-family: 'SimSun'; -fx-background-color: rgba(0, 0, 0, 0.5); -fx-border-color: #FFD700; -fx-border-width: 2px; -fx-border-radius: 10px; -fx-text-fill: #FFD700;"/>
 </VBox>
