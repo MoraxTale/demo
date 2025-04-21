@@ -12,7 +12,7 @@
       fx:controller="com.example.demo.AlchemyController"
       spacing="10"
       alignment="CENTER"
-      style="-fx-padding: 15; -fx-background-image: url('file:///C:/Users/11628/IdeaProjects/demo/pic/pill.png'); -fx-background-size: cover;"
+      style="-fx-padding: 15; -fx-background-image: url('file:///C:/Users/11628/IdeaProjects/demo/src/main/resources/pic/pill.png'); -fx-background-size: cover;"
       prefHeight="500"
       maxHeight="500"
       stylesheets="@style.css">

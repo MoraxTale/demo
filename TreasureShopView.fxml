@@ -11,7 +11,7 @@
       alignment="CENTER"
       prefWidth="800"
       prefHeight="600"
-      style="-fx-padding: 25; -fx-background-image: url('file:///C:/Users/11628/IdeaProjects/demo/pic/fabao.png'); -fx-background-size: cover;">
+      style="-fx-padding: 25; -fx-background-image: url('file:///C:/Users/11628/IdeaProjects/demo/src/main/resources/pic/fabao.png'); -fx-background-size: cover;">
 
         <Label text="法宝图鉴" style="-fx-font-size: 36; -fx-font-weight: bold; -fx-font-family: 'SimSun'; -fx-text-fill: #FFA500; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);"/>
 

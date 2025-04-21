@@ -12,6 +12,7 @@ import javafx.animation.AnimationTimer;
 // 导入 JavaFX 属性相关类
 import javafx.beans.property.*;
 // 导入 JavaFX FXML 相关类，用于加载 FXML 文件和处理 FXML 元素
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 // 导入 JavaFX 场景图相关类
@@ -22,15 +23,20 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 // 导入 JavaFX 窗口相关类
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import javafx.stage.Modality;
 // 导入 Java 输入输出相关类
 import java.io.*;
 // 导入 JavaFX 文件选择器类
 import javafx.stage.FileChooser;
+import javafx.stage.StageStyle;
 // 导入 Java 集合框架中的 Map 接口
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 
 /**
@@ -69,7 +75,6 @@ public class Controller {
     // 灵气增长速度属性，使用 JavaFX 的 DoubleProperty 实现可观察
     private final DoubleProperty qiRate = new SimpleDoubleProperty(1.0);
     // 随机事件处理器对象，用于处理随机触发的事件
-    private RandomEventHandler randomEventHandler;
     // 炼丹界面的窗口对象
     private Stage alchemyStage;
     // 基础点击加成
@@ -86,12 +91,12 @@ public class Controller {
             "仙王", "仙帝", "仙尊", "仙圣", "仙祖",
             "道君", "道王", "道帝", "道尊", "道圣",
             "道祖", "混元大罗金仙", "混元无极金仙", "混沌天尊", "鸿蒙至尊"};
-    private Map<String, AlchemyController.PillData> savedPills = new LinkedHashMap<>();
+    private final Map<String, AlchemyController.PillData> savedPills = new LinkedHashMap<>();
     // 控制器和窗口对象
     private TreasureController treasureController;
     private TreasureShopController treasureShopController;
     private Stage treasureStage, treasureShopStage;
-    private static final long MAX_OFFLINE_TIME_MS = 1 * 60 * 1000;
+    private static final long MAX_OFFLINE_TIME_MS = 60 * 1000;
 
     public int getStageLevel() {
         return stageLevel;
@@ -137,11 +142,14 @@ public class Controller {
 
         // 为修炼按钮添加点击事件处理逻辑
         startAutoQiGrowth();
-        btnCultivate.setOnAction(event -> updataQi(100000000));
+
+
         // 为炼丹按钮添加点击事件处理逻辑
         btnAlchemy.setOnAction(event -> openAlchemyPanel());
+        // 为修炼按钮添加点击事件处理逻辑
+        btnCultivate.setOnAction(this::updateQi);
         // 初始化随机事件处理器
-        randomEventHandler = new RandomEventHandler(this);
+
         // 再次启动灵气自动增长的定时器（可能是代码冗余，可考虑优化）
         startAutoQiGrowth();
         initTreasurePanel();
@@ -162,6 +170,48 @@ public class Controller {
             e.printStackTrace();
             // 输出初始化炼丹控制器失败的信息
             System.out.println("初始化炼丹控制器失败。");
+        }
+        // 在 initialize() 方法末尾添加：
+        showStoryDialog();
+    }
+    private void showStoryDialog() {
+        try {
+            // 自定义剧情文本（可自由修改）
+            List<String> storyPages = List.of(
+                    "【混沌初开】\n" +
+                            "你在一片混沌中缓缓苏醒，四周灵气缭绕如雾。\n" +
+                            "耳边传来缥缈的声音：「此乃太虚之境，汝既入此界，当寻仙问道...」\n",
+
+                    "【灵器认主】\n" +
+                            "腰间突然传来一阵温热，你低头发现一枚古朴玉佩正泛着微光。\n" +
+                            "玉佩上浮现文字：「触摸灵玉，可窥仙途」\n",
+
+                    "【仙缘指引】\n" +
+                            "指尖触及玉佩的刹那，浩瀚信息涌入神识：\n" +
+                            "「修仙四要：炼丹聚灵，炼器护道，渡劫破境，因果轮回...」\n",
+
+                    "【界面初现】\n" +
+                            "玉佩化作流光没入眉心，眼前浮现玄奥符文构成的界面。\n" +
+                            "冥冥中有所明悟——此乃汝的修仙命盘！"
+            );
+
+            // 加载剧情弹窗
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("StoryDialog.fxml"));
+            Parent root = loader.load();
+            Stage storyStage = new Stage();
+            storyStage.initModality(Modality.APPLICATION_MODAL);
+            storyStage.setTitle("仙途启程");
+            storyStage.initStyle(StageStyle.UNDECORATED); // 设置窗口样式为无装饰
+            storyStage.setScene(new Scene(root));
+
+            // 修改最后一页按钮文本为「进入修仙界面」
+            StoryDialogController controller = loader.getController();
+            controller.initStory(storyPages);
+            controller.setCustomButtonText("进入修仙界面", storyPages.size() - 1); // 新增方法
+            storyStage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
     // 添加以下方法到Controller类
@@ -303,7 +353,7 @@ public class Controller {
         double pillImpact = 0.0;
         if (alchemyController != null) {
             for (AlchemyController.PillData pill : alchemyController.getPills().values()) {
-                pillImpact += pill.successRateImpact * pill.count;
+                pillImpact = pill.successRateImpact * pill.count;
             }
         }
         actualSuccessRate.set(Math.min(successRate.get() + pillImpact, 1.0));
@@ -339,8 +389,7 @@ public class Controller {
                 alchemyController = loader.getController();
                 alchemyController.setMainController(this);
             }
-            alchemyController.loadPillsOnClick();
-            alchemyStage.showAndWait();
+
 
 
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
@@ -541,19 +590,25 @@ public class Controller {
                 currentStage.set(STAGES[stageLevel]);
                 successRate.set(BASE_SUCCESS_RATE * Math.pow(DECAY_FACTOR, stageLevel));
                 qi.set(qi.get() - BASE_BREAKTHROUGH_COST);
-
-                // 衰减丹药影响力并重新加载界面
+// 新增：删除所有丹药
                 if (alchemyController != null) {
-                    alchemyController.getPills().values().forEach(pill -> {
-                        pill.successRateImpact *= 0.1;
-                    });
-                    alchemyController.loadPillsOnClick();
-                    alchemyController.updateAvailablePills();
+                    // 清空主控制器保存的丹药数据
+                    savedPills.clear();
+                    // 清空炼丹界面的丹药数据
+                    alchemyController.getPills().clear();
+                    // 重新生成丹药（可选，根据需求）
+                    alchemyController.generateNewPills();
+                    // 更新显示
                     alchemyController.updatePillDisplay();
+                    // 应用效果变化
+                    applyPillEffects();
                 }
+
                 updateActualSuccessRate();
                 new Alert(Alert.AlertType.INFORMATION, "渡劫成功！当前境界：" + STAGES[stageLevel]).showAndWait();
+                showBreakthroughDialog(); // <--- 新增此行
             }
+            showStageStoryDialog(stageLevel); // <--- 新增此行
         } else {
             successRate.set(Math.min(successRate.get() + 0.1, 1.0));
             qi.set(qi.get() - BASE_BREAKTHROUGH_COST);
@@ -561,8 +616,41 @@ public class Controller {
             new Alert(Alert.AlertType.ERROR, "渡劫失败！下次成功率：" + String.format("%.1f%%", actualSuccessRate.get() * 100)).showAndWait();
         }
     }
+    // 在 Controller.java 中添加方法
+    private void showBreakthroughDialog() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("BreakthroughDialog.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("破境机缘");
+            stage.initStyle(StageStyle.UNDECORATED);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    // 在 Controller.java 中添加
+    private void showStageStoryDialog(int newStageLevel) {
+        List<String> story = StageStoryConfig.STAGE_STORIES.get(newStageLevel);
+        if (story == null || story.isEmpty()) return;
 
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("StoryDialog.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initStyle(StageStyle.UNDECORATED);
+            stage.setScene(new Scene(root));
 
+            StoryDialogController controller = loader.getController();
+            controller.initStory(story);
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * 打开炼丹界面的方法
      */
@@ -645,7 +733,7 @@ public class Controller {
                         " 效果值:" + treasure.getEffectValue()); // 调试输出
                 switch (treasure.getEffectType()) {
                     case "CLICK_BONUS":
-                        totalClickBonus += treasure.getEffectValue();
+                        totalClickBonus += (int) treasure.getEffectValue();
                         break;
                     case "AUTO_RATE":
                         totalAutoRate += treasure.getEffectValue();
@@ -730,7 +818,7 @@ public class Controller {
                 "初始赠送",
                 500,
                 "CLICK_BONUS",
-                1000
+                1
         );
         starterTreasure.setLevel(1); // 初始等级设为1
         treasureController.getTreasures().put(starterTreasure.getId(), starterTreasure);
@@ -751,8 +839,9 @@ public class Controller {
         qiRate.set(1.0 + totalAutoRateBonus);
     }
 
-    //点击修炼按钮时增加灵气的方法
-    public void updataQi(int baseBonus) {
+    @FXML
+    public void updateQi(ActionEvent event) {
+        int baseBonus = 1000; // 这里设置基础加成
         int totalBonus = baseBonus;
         // 遍历所有法宝，累加点击加成
         for (TreasureData treasure : treasureController.getTreasures().values()) {
@@ -761,7 +850,15 @@ public class Controller {
             }
         }
         qi.set(qi.get() + totalBonus);
+
+        // 显示弹幕
+        // 显示弹幕
+        String danmakuText = "修为 + " + clickBonus;
+        showDanmaku(danmakuText);
     }
+
+
+
 
     private int calculateClickBonus() {
         return treasureController.getTreasures().values().stream()
@@ -815,4 +912,36 @@ public class Controller {
 
     public int getQi() { return qi.get();
     }
+    /**
+     * 显示弹幕
+     * @param text 弹幕内容
+     */
+    private void showDanmaku(String text) {
+        Region root = (Region) lblQi.getScene().getRoot();
+
+        if (root == null) return;
+
+        // 获取按钮在场景中的坐标（修正后的逻辑）
+        javafx.geometry.Point2D sceneCoords = btnCultivate.localToScene(0, 0);
+        double x = sceneCoords.getX() + btnCultivate.getScene().getWindow().getX();
+        double y = sceneCoords.getY() + btnCultivate.getScene().getWindow().getY();
+
+        System.out.println("根布局宽度: " + root.getWidth() + ", 根布局高度: " + root.getHeight());
+// 输出根布局的属性，用于调试
+        System.out.println("根布局属性: clip = " + root.getClip() + ", effect = " + root.getEffect());
+
+        // 创建弹幕并直接添加到根布局
+        Danmaku danmaku = new Danmaku(text, x, y);
+        if (root instanceof Pane) {
+            ((Pane) root).getChildren().add(danmaku);
+
+            System.out.println("根布局子节点数量: " + ((Pane) root).getChildren().size());
+
+        } else {
+            new Alert(Alert.AlertType.ERROR, "弹幕系统初始化失败").show();
+        }
+    }
+
+
+
 }
