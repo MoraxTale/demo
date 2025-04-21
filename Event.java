@@ -1,7 +1,6 @@
-package com.example.demo;
+package com.example.demo1;
 
 import java.util.List;
-
 public class Event {
     private String name;
     private String description;

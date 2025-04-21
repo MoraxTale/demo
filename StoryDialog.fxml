@@ -5,7 +5,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.demo.StoryDialogController"
+      fx:controller="com.example.demo1.StoryDialogController"
       spacing="20"
       alignment="CENTER"
       style="-fx-padding: 20; -fx-background-color: rgba(0,0,0,0.9); -fx-border-color: gold;">

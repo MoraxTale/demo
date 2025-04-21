@@ -142,7 +142,3 @@
  .grid-pills {
      -fx-background-color: transparent;
  }
- .stack-pane:hover {
-     -fx-cursor: hand;
-     -fx-effect: dropshadow(gaussian, rgba(255,215,0,0.5), 20, 0.5, 0, 0);
- }

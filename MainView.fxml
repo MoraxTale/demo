@@ -11,9 +11,9 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.example.demo.Controller"
+            fx:controller="com.example.demo1.Controller"
             stylesheets="@style.css"
-            style="-fx-background-image: url('file:///C:/Users/11628/IdeaProjects/demo/src/main/resources/pic/main.png'); -fx-background-size: cover;">
+            style="-fx-background-image: url('file:///C:/Users/21467/Desktop/demo1/pic/main.png'); -fx-background-size: cover;">
 
     <top>
         <HBox styleClass="transparent-pane" alignment="CENTER_LEFT">
@@ -33,7 +33,7 @@
                     <MenuItem text="加载" onAction="#handleLoad"/>
                 </Menu>
                 <Menu text="帮助" styleClass="right-menu">
-                    <MenuItem text="关于" />
+                    <MenuItem text="关于"/>
                 </Menu>
             </MenuBar>
         </HBox>
@@ -48,7 +48,7 @@
             </HBox>
 
             <!-- 中央修炼按钮 -->
-            <Button text="修炼" fx:id="btnCultivate" styleClass="circle-btn" onAction="#updateQi"/>
+            <Button text="修炼" fx:id="btnCultivate" styleClass="circle-btn"/>
 
             <!-- 右侧按钮组 -->
             <HBox alignment="CENTER_LEFT" spacing="15">

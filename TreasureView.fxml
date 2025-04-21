@@ -7,10 +7,10 @@
 <?import javafx.scene.control.ScrollPane?>
 <VBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.demo.TreasureController"
+      fx:controller="com.example.demo1.TreasureController"
       spacing="10"
       alignment="CENTER"
-      style="-fx-padding: 20; -fx-background-image: url('file:///C:/Users/11628/IdeaProjects/demo/pic/main.png'); -fx-background-size: cover;">
+      style="-fx-padding: 20; -fx-background-image: url('file:///C:/Users/21467/Desktop/demo1/pic/main.png'); -fx-background-size: cover;">
 
     <Label text="我的法宝" style="-fx-font-size: 24px; -fx-text-fill: gold; -fx-font-weight: bold;"/>
 

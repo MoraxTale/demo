@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo1;
 
 public class PillConfig {
     private final String name;

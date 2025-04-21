@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo1;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -6,8 +6,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-
 import java.util.List;
 
 public class BreakthroughDialogController {
@@ -58,7 +56,6 @@ public class BreakthroughDialogController {
             Parent root = loader.load();
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.initStyle(StageStyle.UNDECORATED);
 
             // 传递剧情数据
             StoryDialogController controller = loader.getController();

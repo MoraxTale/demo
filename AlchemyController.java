@@ -1,6 +1,4 @@
-package com.example.demo;
-
-
+package com.example.demo1;
 
 // 导入 JavaFX FXML 相关类
 import javafx.application.Platform;
@@ -21,7 +19,6 @@ import java.io.Serializable;
 // 导入 Java 集合框架中的 LinkedHashMap 实现类和 Map 接口
 import java.util.*;
 import java.util.stream.Collectors;
-
 
 /**
  * 炼丹控制器类，负责处理炼丹界面的逻辑和操作
@@ -337,7 +334,7 @@ public class AlchemyController {
         }
     }
 
-    void generateNewPills() {
+    private void generateNewPills() {
         pills.clear();
         int index = 0;
         for (PillConfig config : customPills) {
