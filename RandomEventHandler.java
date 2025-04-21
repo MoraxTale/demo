@@ -1,4 +1,5 @@
 package com.example.demo1;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.geometry.Insets;
@@ -7,12 +8,20 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import java.util.Random;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class RandomEventHandler {
-    private static final double TRIGGER_CHANCE = 0.9; // 0.5%触发概率
-    static final Random random = new Random();
-    private Controller mainController;
+    private static final double TRIGGER_CHANCE = 0.001; // 0.5%触发概率
+    private final Random random = new Random();
+    private final Controller mainController;
+    public RandomEventHandler(Controller controller) {
+        this.mainController = controller;
+    }
+    public void checkOnCultivateClick() {
+        if (random.nextDouble() <= TRIGGER_CHANCE) {
+            Platform.runLater(this::triggerRandomEvent); // 在JavaFX线程触发事件
+        }
+    }
+
     private enum NpcLevel {
         WEAKER,      // 比玩家弱
         EQUAL,       // 与玩家相当
@@ -44,10 +53,6 @@ public class RandomEventHandler {
         TREASURE,    // 法宝
         RATE_BOOST   // 修炼速度
     }
-    public RandomEventHandler(Controller controller) {
-        this.mainController = controller;
-    }
-
 
     private void handlePillReward(int count) {
         int playerLevel = mainController.getStageLevel();
@@ -106,19 +111,22 @@ public class RandomEventHandler {
 
     // **触发随机事件的方法**
     private void triggerRandomEvent() {
-        // **定义三种事件**
-        List<Event> events = new ArrayList<>();
-        events.add(new Event("灵气波动", "灵气突然波动,运用功法好像能改变灵气的吸收程度", createQiOptions()));
-        events.add(new Event("神秘商人", "神秘商人出现", createMerchantOptions()));
-        events.add(new Event("秘境探险", "发现秘境入口", createAdventureOptions()));
-        events.add(new Event("道友切磋", "一位道友邀请你切磋", createDuelOptions()));
-        events.add(new Event("妖兽袭击", "一只妖兽突然袭击你", createMonsterAttackOptions()));
-        events.add(new Event("秘境探索", "发现一处未知秘境", createSecretRealmOptions()));
-        // **随机选择一个事件**
-        Event selectedEvent = events.get(random.nextInt(events.size()));
+        Platform.runLater(() -> {
+            // 定义三种事件
+            List<Event> events = new ArrayList<>();
+            events.add(new Event("灵气波动", "灵气突然波动,运用功法好像能改变灵气的吸收程度", createQiOptions()));
+            events.add(new Event("神秘商人", "神秘商人出现", createMerchantOptions()));
+            events.add(new Event("秘境探险", "发现秘境入口", createAdventureOptions()));
+            events.add(new Event("道友切磋", "一位道友邀请你切磋", createDuelOptions()));
+            events.add(new Event("妖兽袭击", "一只妖兽突然袭击你", createMonsterAttackOptions()));
+            events.add(new Event("秘境探索", "发现一处未知秘境", createSecretRealmOptions()));
 
-        // **显示事件弹窗**
-        showEventAlert(selectedEvent);
+            // 随机选择一个事件
+            Event selectedEvent = events.get(random.nextInt(events.size()));
+
+            // 显示事件弹窗
+            showEventAlert(selectedEvent);
+        });
     }
 
     // **创建灵气波动事件的选项**

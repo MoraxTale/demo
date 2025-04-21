@@ -1,0 +1,11 @@
+.treasure-button {
+    -fx-font-family: "SimSun";
+    -fx-font-size: 14px;
+    -fx-pref-width: 200px;
+    -fx-padding: 10px;
+}
+
+.treasure-button:hover {
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);
+}
