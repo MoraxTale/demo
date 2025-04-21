@@ -105,4 +105,11 @@ public class TreasureController {
         treasureListView.setItems(obtainedTreasures);
         treasureListView.refresh(); // 强制刷新ListView
     }
+    public void printAllTreasures() {
+        System.out.println("当前法宝列表：");
+        treasures.forEach((id, treasure) -> {
+            System.out.printf("  %s: %s (Lv.%d, 效果值: %.0f秒)\n",
+                    id, treasure.getName(), treasure.getLevel(), treasure.getEffectValue());
+        });
+    }
 }

@@ -11,6 +11,7 @@ import java.util.Map;
 public class GameState implements Serializable {
     // 序列化版本号，确保序列化和反序列化的兼容性
     private static final long serialVersionUID = 1L;
+    public static final long BASE_MAX_OFFLINE_TIME_MS = 60 * 1000; // 基础60秒离线时间
     // 当前灵气值
     private int qi;
     // 当前灵气增长速度
@@ -23,7 +24,7 @@ public class GameState implements Serializable {
     private long lastSaveTime;
     private Map<String, TreasureData> treasures; // 新增：法宝数据字段
     // 基础最大离线时间（毫秒），设为可配置的静态变量
-    private static long BASE_MAX_OFFLINE_TIME_MS = 60 * 1000; // 默认60秒
+
     public static long getMaxOfflineTimeMs(Map<String, TreasureData> treasures) {
         long maxTime = BASE_MAX_OFFLINE_TIME_MS;
         if (treasures != null) {
@@ -35,16 +36,12 @@ public class GameState implements Serializable {
         }
         return maxTime;
     }
-
     // 新增方法获取基础值（用于调试）
     public static long getBaseMaxOfflineTime() {
         return BASE_MAX_OFFLINE_TIME_MS;
     }
 
     // 添加设置方法
-    public static void setBaseMaxOfflineTime(long seconds) {
-        BASE_MAX_OFFLINE_TIME_MS = seconds * 1000;
-    }
 
     // 修改获取最大离线时间的方法
     /**
@@ -61,6 +58,10 @@ public class GameState implements Serializable {
         this.stageLevel = stageLevel;
         this.treasures = treasures;
         this.lastSaveTime = lastSaveTime; // 记录保存时间
+    }
+
+    public static Object getInstance() {
+        return null;
     }
 
 

@@ -27,7 +27,79 @@ public class TreasureShopController {
             initialized = true;
         }
     }
+    // 处理法宝升级
+    private void handleUpgrade(TreasureData treasure) {
+        if (mainController.deductQi(treasure.getUpgradeCost())) {
+            treasure.upgrade(mainController);
+            loadShopTreasures(); // 刷新商店界面
+            new Alert(Alert.AlertType.INFORMATION,
+                    "升级成功！当前效果：" + treasure.getEffectDescription()).show();
+        } else {
+            new Alert(Alert.AlertType.WARNING, "灵气不足！").show();
+        }
+    }
 
+    // 显示购买对话框
+    private void showPurchaseDialog(TreasureData treasure) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(treasure.getName());
+        alert.setHeaderText("是否购买此法宝？");
+        alert.setContentText(
+                "效果：" + treasure.getEffectDescription() + "\n" +
+                        "价格：" + treasure.getUpgradeCost() + "灵气"
+        );
+
+        Optional<ButtonType> result = alert.showAndWait();
+        result.ifPresent(buttonType -> {
+            if (buttonType == ButtonType.OK) {
+                if (mainController.deductQi(treasure.getUpgradeCost())) {
+                    TreasureData newTreasure = new TreasureData(
+                            treasure.getId(),
+                            treasure.getName(),
+                            treasure.getDescription(),
+                            treasure.getAcquisitionMethod(),
+                            treasure.getUpgradeCost(),
+                            treasure.getEffectType(),
+                            treasure.getEffectPercentage()
+                    );
+                    mainController.addTreasureToBackpack(newTreasure);
+                    new Alert(Alert.AlertType.INFORMATION, "购买成功！").show();
+                    loadShopTreasures();
+                } else {
+                    new Alert(Alert.AlertType.WARNING, "灵气不足！").show();
+                }
+            }
+        });
+    }
+
+    // 创建工具提示
+    private Tooltip createTooltip(TreasureData treasure) {
+        String effectDesc;
+        if ("AUTO_RATE".equals(treasure.getEffectType())) {
+            effectDesc = String.format("修炼速度+%.1f%%", treasure.getEffectPercentage() * 100);
+        }else if ("CLICK_BONUS".equals(treasure.getEffectType())) {
+            effectDesc = String.format("点击加成+%.0f", treasure.getEffectValue());
+        } else if ("OFFLINE_TIME".equals(treasure.getEffectType())) {
+            effectDesc = String.format("最大离线时间+%.0f秒", treasure.getEffectValue());
+        } else {
+            effectDesc = treasure.getEffectDescription();
+        }
+
+        String tooltipText = String.format(
+                "【%s】Lv.%d/%d\n效果：%s\n描述：%s\n升级需要：%d灵气\n%s",
+                treasure.getName(),
+                treasure.getLevel(),
+                treasure.getMaxLevel(),
+                effectDesc,
+                treasure.getDescription(),
+                treasure.getUpgradeCost(),
+                mainController.hasTreasure(treasure) ? "已拥有" : "未购买"
+        );
+
+        Tooltip tooltip = new Tooltip(tooltipText);
+        tooltip.setShowDelay(Duration.millis(100));
+        return tooltip;
+    }
     private List<TreasureData> loadAllTreasures() {
         // 返回所有法宝数据的列表（示例）
         return Arrays.asList();
@@ -104,7 +176,6 @@ public class TreasureShopController {
         );
     }
 
-
     public void loadShopTreasures() {
         if (mainController == null) {
             System.err.println("主控制器未初始化！");
@@ -138,54 +209,63 @@ public class TreasureShopController {
                         "商店购买",
                         2000,
                         "OFFLINE_TIME",
-                        60 // 基础加60秒
+                        60
                 )
         );
-        // 添加空值检查
+
         shopTreasures.forEach(treasure -> {
             // 获取实际存在的法宝对象（如果有）
             TreasureData actualTreasure = mainController.getTreasureController().getTreasures()
                     .getOrDefault(treasure.getId(), treasure);
 
-            System.out.println("[DEBUG] 商店法宝 ID: " + treasure.getId());
             Button btn = new Button();
-            btn.setUserData(actualTreasure); // 绑定实际对象
+            btn.setUserData(actualTreasure);
             btn.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-text-fill: #e6d8a9; -fx-font-size: 14px;");
-            btn.setText(buildButtonText(actualTreasure));
 
-            // 添加 Tooltip
-            Tooltip tooltip = new Tooltip();
-            tooltip.setText(formatTooltipText(actualTreasure));
-            tooltip.setShowDelay(Duration.millis(100));
-            Tooltip.install(btn, tooltip);
-
-            // 检查是否已经拥有该法宝
+            // 设置按钮文本和事件
             if (mainController.hasTreasure(actualTreasure)) {
-                if (treasure.isMaxLevel()) {
+                if (actualTreasure.isMaxLevel()) {
                     btn.setText(actualTreasure.getName() + " (已满级)");
                     btn.setDisable(true);
                 } else {
                     btn.setText(actualTreasure.getName() + " (Lv." + actualTreasure.getLevel() + " 升级)");
-                    btn.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-text-fill: #e6d8a9; -fx-font-size: 14px;");
-                    btn.setOnAction(e -> {
-                        if (mainController.deductQi(actualTreasure.getUpgradeCost())) {
-                            actualTreasure.upgrade(mainController); // 操作实际对象
-                            loadShopTreasures();
-                            new Alert(Alert.AlertType.INFORMATION,
-                                    "升级成功！当前效果：" + actualTreasure.getEffectDescription()).show();
-                        } else {
-                            new Alert(Alert.AlertType.WARNING, "灵气不足！").show();
-                        }
-                    });
+                    btn.setOnAction(e -> handleUpgrade(actualTreasure));
                 }
             } else {
-                btn.setOnAction(e -> showTreasureDetail(treasure));
+                btn.setText(actualTreasure.getName());
+                btn.setOnAction(e -> showPurchaseDialog(actualTreasure));
             }
+
+            // 添加Tooltip
+            Tooltip tooltip = createTooltip(actualTreasure);
+            Tooltip.install(btn, tooltip);
 
             btn.setMaxWidth(Double.MAX_VALUE);
             vboxShop.getChildren().add(btn);
         });
     }
+    private Button createTreasureButton(TreasureData treasure) {
+        Button btn = new Button();
+        btn.setUserData(treasure);
+        btn.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-text-fill: #e6d8a9;");
+
+        if (mainController.hasTreasure(treasure)) {
+            if (treasure.isMaxLevel()) {
+                btn.setText(treasure.getName() + " (已满级)");
+                btn.setDisable(true);
+            } else {
+                btn.setText(treasure.getName() + " (Lv." + treasure.getLevel() + " 升级)");
+                btn.setOnAction(e -> handleUpgrade(treasure));
+            }
+        } else {
+            btn.setText(treasure.getName());
+            btn.setOnAction(e -> showPurchaseDialog(treasure));
+        }
+
+        Tooltip.install(btn, createTooltip(treasure));
+        return btn;
+    }
+
 
     private String buildButtonText(TreasureData treasure) {
         return String.format(
