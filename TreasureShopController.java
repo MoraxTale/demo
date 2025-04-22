@@ -11,6 +11,10 @@ import javafx.util.Duration;
 import java.util.*;
 
 public class TreasureShopController {
+    @FXML
+    private void closeShopPanel () {
+        vboxShop.getScene().getWindow().hide();
+    }
     private Controller mainController;
     private boolean initialized = false;
     @FXML
@@ -27,7 +31,7 @@ public class TreasureShopController {
             initialized = true;
         }
     }
-    // 处理法宝升级
+
     private void handleUpgrade(TreasureData treasure) {
         if (mainController.deductQi(treasure.getUpgradeCost())) {
             treasure.upgrade(mainController);
@@ -74,19 +78,9 @@ public class TreasureShopController {
 
     // 创建工具提示
     private Tooltip createTooltip(TreasureData treasure) {
-        String effectDesc;
-        if ("AUTO_RATE".equals(treasure.getEffectType())) {
-            effectDesc = String.format("修炼速度+%.1f%%", treasure.getEffectPercentage() * 100);
-        }else if ("CLICK_BONUS".equals(treasure.getEffectType())) {
-            effectDesc = String.format("点击加成+%.0f", treasure.getEffectValue());
-        } else if ("OFFLINE_TIME".equals(treasure.getEffectType())) {
-            effectDesc = String.format("最大离线时间+%.0f秒", treasure.getEffectValue());
-        } else {
-            effectDesc = treasure.getEffectDescription();
-        }
-
+        String effectDesc = treasure.getEffectDescription();
         String tooltipText = String.format(
-                "【%s】Lv.%d/%d\n效果：%s\n描述：%s\n升级需要：%d灵气\n%s",
+                "【%s】Lv.%d/%s\n效果：%s\n描述：%s\n升级需要：%d灵气\n%s",
                 treasure.getName(),
                 treasure.getLevel(),
                 treasure.getMaxLevel(),
@@ -100,9 +94,46 @@ public class TreasureShopController {
         tooltip.setShowDelay(Duration.millis(100));
         return tooltip;
     }
+
     private List<TreasureData> loadAllTreasures() {
-        // 返回所有法宝数据的列表（示例）
-        return Arrays.asList();
+        return Arrays.asList(
+                new TreasureData(
+                        "WQX001",
+                        "五禽戏秘籍",
+                        "华佗所创养生功法，可强身健体",
+                        "初始赠送",
+                        1000,
+                        "CLICK_BONUS",
+                        5
+                ),
+                new TreasureData(
+                        "JX002",
+                        "聚灵阵图",
+                        "可凝聚天地灵气的上古阵图",
+                        "商店购买",
+                        1000,
+                        "AUTO_RATE",
+                        50
+                ),
+                new TreasureData(
+                        "SJ004",
+                        "时空塔",
+                        "可延长修炼时间的逆天法宝",
+                        "商店购买",
+                        5000,
+                        "OFFLINE_TIME",
+                        60
+                ),
+                new TreasureData(
+                        "XL005",
+                        "天穹灵引",
+                        "可大幅提升修炼速度的仙家符箓",
+                        "商店购买",
+                        8000,
+                        "AUTO_RATE_BASE",
+                        10.0
+        )
+        );
     }
 
 
@@ -157,21 +188,15 @@ public class TreasureShopController {
 
     // 生成提示文本
     private String formatTooltipText(TreasureData treasure) {
-        String effectDesc;
-        if ("AUTO_RATE".equals(treasure.getEffectType())) {
-            effectDesc = String.format("修炼速度+%.1f%%", treasure.getEffectPercentage() * 100);
-        } else {
-            effectDesc = treasure.getEffectDescription();
-        }
-
+        String effectDesc = treasure.getEffectDescription();
         return String.format(
-                "【%s】Lv.%d/%d\n效果：%s\n描述：%s\n升级需要：%d灵气\n%s",
+                "【%s】Lv.%d/%s\n效果：%s\n描述：%s\n升级需要：%s灵气\n%s",
                 treasure.getName(),
-                treasure.getLevel(),
+                treasure.getLevel(), // 显示当前等级
                 treasure.getMaxLevel(),
                 effectDesc,
-                treasure.getDescription(),
                 treasure.getUpgradeCost(),
+                treasure.getDescription(),
                 mainController.hasTreasure(treasure) ? "已拥有" : "未购买"
         );
     }
@@ -183,38 +208,9 @@ public class TreasureShopController {
         }
 
         vboxShop.getChildren().clear();
-        List<TreasureData> shopTreasures = Arrays.asList(
-                new TreasureData(
-                        "WQX001",
-                        "五禽戏秘籍",
-                        "华佗所创养生功法，可强身健体",
-                        "初始赠送",
-                        500,
-                        "CLICK_BONUS",
-                        1000
-                ),
-                new TreasureData(
-                        "JX002",
-                        "聚灵阵图",
-                        "可凝聚天地灵气的上古阵图",
-                        "商店购买",
-                        1000,
-                        "AUTO_RATE",
-                        0.10
-                ),
-                new TreasureData(
-                        "SJ004",
-                        "时空塔",
-                        "可延长修炼时间的逆天法宝",
-                        "商店购买",
-                        2000,
-                        "OFFLINE_TIME",
-                        60
-                )
-        );
+        List<TreasureData> shopTreasures = loadAllTreasures();
 
         shopTreasures.forEach(treasure -> {
-            // 获取实际存在的法宝对象（如果有）
             TreasureData actualTreasure = mainController.getTreasureController().getTreasures()
                     .getOrDefault(treasure.getId(), treasure);
 
@@ -222,7 +218,6 @@ public class TreasureShopController {
             btn.setUserData(actualTreasure);
             btn.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-text-fill: #e6d8a9; -fx-font-size: 14px;");
 
-            // 设置按钮文本和事件
             if (mainController.hasTreasure(actualTreasure)) {
                 if (actualTreasure.isMaxLevel()) {
                     btn.setText(actualTreasure.getName() + " (已满级)");
@@ -236,7 +231,6 @@ public class TreasureShopController {
                 btn.setOnAction(e -> showPurchaseDialog(actualTreasure));
             }
 
-            // 添加Tooltip
             Tooltip tooltip = createTooltip(actualTreasure);
             Tooltip.install(btn, tooltip);
 
@@ -244,38 +238,8 @@ public class TreasureShopController {
             vboxShop.getChildren().add(btn);
         });
     }
-    private Button createTreasureButton(TreasureData treasure) {
-        Button btn = new Button();
-        btn.setUserData(treasure);
-        btn.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-text-fill: #e6d8a9;");
 
-        if (mainController.hasTreasure(treasure)) {
-            if (treasure.isMaxLevel()) {
-                btn.setText(treasure.getName() + " (已满级)");
-                btn.setDisable(true);
-            } else {
-                btn.setText(treasure.getName() + " (Lv." + treasure.getLevel() + " 升级)");
-                btn.setOnAction(e -> handleUpgrade(treasure));
-            }
-        } else {
-            btn.setText(treasure.getName());
-            btn.setOnAction(e -> showPurchaseDialog(treasure));
-        }
-
-        Tooltip.install(btn, createTooltip(treasure));
-        return btn;
-    }
-
-
-    private String buildButtonText(TreasureData treasure) {
-        return String.format(
-                "【%s】Lv.%d\n%s\n获取方式：%s",
-                treasure.getName(),
-                treasure.getLevel(), // 显示当前等级
-                treasure.getDescription(),
-                treasure.getAcquisitionMethod()
-        );
-    }
+    // 添加空值检查
 
     private void showTreasureDetail(TreasureData treasure) {
         if (mainController == null) {
@@ -286,7 +250,7 @@ public class TreasureShopController {
         if (mainController.hasTreasure(treasure)) {
             return;
         }
-
+        if(treasure == null) return;
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(treasure.getName());
         alert.setHeaderText("是否购买此法宝？");
@@ -318,10 +282,6 @@ public class TreasureShopController {
                 }
             }
         });
-    }
 
-    @FXML
-    private void closeShopPanel() {
-        vboxShop.getScene().getWindow().hide();
     }
 }

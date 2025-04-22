@@ -5,13 +5,16 @@ import java.io.Serializable;
 // 导入 Java 集合框架中的 Map 接口
 import java.util.Map;
 
+import static com.example.demo1.Controller.BASE_MAX_OFFLINE_TIME_MS;
+
 /**
  * 游戏状态类，用于保存游戏的当前状态，可序列化以便保存到文件
  */
 public class GameState implements Serializable {
+    public static final long BASE_MAX_OFFLINE_TIME_MS =1*60*1000 ;
     // 序列化版本号，确保序列化和反序列化的兼容性
     private static final long serialVersionUID = 1L;
-    public static final long BASE_MAX_OFFLINE_TIME_MS = 60 * 1000; // 基础60秒离线时间
+    private static final long MAX_OFFLINE_TIME_MS = 1 * 60 * 1000;
     // 当前灵气值
     private int qi;
     // 当前灵气增长速度
@@ -23,8 +26,6 @@ public class GameState implements Serializable {
     // 新增：保存时的系统时间（毫秒）
     private long lastSaveTime;
     private Map<String, TreasureData> treasures; // 新增：法宝数据字段
-    // 基础最大离线时间（毫秒），设为可配置的静态变量
-
     public static long getMaxOfflineTimeMs(Map<String, TreasureData> treasures) {
         long maxTime = BASE_MAX_OFFLINE_TIME_MS;
         if (treasures != null) {
@@ -36,13 +37,9 @@ public class GameState implements Serializable {
         }
         return maxTime;
     }
-    // 新增方法获取基础值（用于调试）
     public static long getBaseMaxOfflineTime() {
         return BASE_MAX_OFFLINE_TIME_MS;
     }
-
-    // 添加设置方法
-
     // 修改获取最大离线时间的方法
     /**
      * 构造方法，初始化游戏状态对象
@@ -59,12 +56,9 @@ public class GameState implements Serializable {
         this.treasures = treasures;
         this.lastSaveTime = lastSaveTime; // 记录保存时间
     }
-
     public static Object getInstance() {
-        return null;
+        throw new UnsupportedOperationException("此方法不应被调用");
     }
-
-
     /**
      * 获取当前灵气值的方法
      * @return 当前灵气值
@@ -79,6 +73,9 @@ public class GameState implements Serializable {
      */
     public double getQiRate() {
         return qiRate;
+    }
+    public static long getMaxOfflineTimeMs() {
+        return MAX_OFFLINE_TIME_MS;
     }
     /**
      * 获取炼丹数据的方法

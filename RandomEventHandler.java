@@ -10,7 +10,7 @@ import java.util.Random;
 import java.util.*;
 
 public class RandomEventHandler {
-    private static final double TRIGGER_CHANCE = 0.001; // 0.5%触发概率
+    private static final double TRIGGER_CHANCE = 0.002; // 0.5%触发概率
     private final Random random = new Random();
     private final Controller mainController;
     public RandomEventHandler(Controller controller) {

@@ -1,9 +1,11 @@
 package com.example.demo1;
 
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
 import java.util.List;
@@ -43,6 +45,7 @@ public class StoryDialogController {
         }
         lblText.setText(storyPages.get(pageIndex));
         currentPage = pageIndex;
+// 设置窗口样式为无装饰，移除右上角关闭按钮
 
         // 动态更新按钮文本
         if (pageIndex == storyPages.size() - 1) {
@@ -57,4 +60,5 @@ public class StoryDialogController {
     private void handleNext() {
         showPage(currentPage + 1);
     }
+
 }
