@@ -26,6 +26,7 @@ public class GameState implements Serializable {
     // 新增：保存时的系统时间（毫秒）
     private long lastSaveTime;
     private Map<String, TreasureData> treasures; // 新增：法宝数据字段
+    private AdventureState adventureState;
     public static long getMaxOfflineTimeMs(Map<String, TreasureData> treasures) {
         long maxTime = BASE_MAX_OFFLINE_TIME_MS;
         if (treasures != null) {
@@ -48,13 +49,14 @@ public class GameState implements Serializable {
      * @param pills 炼丹数据
      * @param stageLevel 当前境界等级
      */
-    public GameState(int qi, double qiRate, Map<String, AlchemyController.PillData> pills, Map<String, TreasureData> treasures,int stageLevel,long lastSaveTime) {
+    public GameState(int qi, double qiRate, Map<String, AlchemyController.PillData> pills, Map<String, TreasureData> treasures,int stageLevel,long lastSaveTime,AdventureState adventureState) {
         this.qi = qi;
         this.qiRate = qiRate;
         this.pills = pills;
         this.stageLevel = stageLevel;
         this.treasures = treasures;
         this.lastSaveTime = lastSaveTime; // 记录保存时间
+        this.adventureState = adventureState;
     }
     public static Object getInstance() {
         throw new UnsupportedOperationException("此方法不应被调用");
@@ -63,6 +65,8 @@ public class GameState implements Serializable {
      * 获取当前灵气值的方法
      * @return 当前灵气值
      */
+    public AdventureState getAdventureState() {
+        return adventureState;}
     public int getQi() {
         return qi;
     }

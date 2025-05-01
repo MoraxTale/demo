@@ -10,7 +10,7 @@ import java.util.Random;
 import java.util.*;
 
 public class RandomEventHandler {
-    private static final double TRIGGER_CHANCE = 0.002; // 0.5%触发概率
+    private static final double TRIGGER_CHANCE = 0.5; // 0.5%触发概率
     private final Random random = new Random();
     private final Controller mainController;
     public RandomEventHandler(Controller controller) {
@@ -120,6 +120,18 @@ public class RandomEventHandler {
             events.add(new Event("道友切磋", "一位道友邀请你切磋", createDuelOptions()));
             events.add(new Event("妖兽袭击", "一只妖兽突然袭击你", createMonsterAttackOptions()));
             events.add(new Event("秘境探索", "发现一处未知秘境", createSecretRealmOptions()));
+            events.add(new Event("灵药园奇遇", "发现一片野生灵药园", createHerbGardenOptions()));
+            events.add(new Event("古修士洞府", "发现一座古修士遗留的洞府", createAncientCaveOptions()));
+            events.add(new Event("天劫余韵", "附近有修士渡劫失败，天劫余韵未散", createHeavenlyTribulationOptions()));
+            events.add(new Event("心魔入侵", "修炼时突然遭遇心魔入侵", createInnerDemonOptions()));
+            events.add(new Event("灵兽认主", "一只灵兽主动接近你", createSpiritBeastOptions()));
+            events.add(new Event("丹道顿悟", "炼丹时突然有所感悟", createAlchemyEpiphanyOptions()));
+            events.add(new Event("灵脉爆发", "地下灵脉突然爆发", createQiVeinEruptionOptions()));
+            events.add(new Event("上古丹炉", "发现一座上古时期的炼丹炉", createAncientFurnaceOptions()));
+            events.add(new Event("灵雨降临", "天降灵雨，蕴含丰富灵气", createSpiritualRainOptions()));
+            events.add(new Event("时间秘境", "误入时间流速异常的区域", createTimeSecretRealmOptions()));
+            events.add(new Event("丹毒发作", "长期服用丹药导致丹毒发作", createPillToxicityOptions()));
+            events.add(new Event("丹道大会", "附近正在举办炼丹师交流大会", createAlchemyConferenceOptions()));
 
             // 随机选择一个事件
             Event selectedEvent = events.get(random.nextInt(events.size()));
@@ -185,6 +197,90 @@ public class RandomEventHandler {
         options.add(new EventOption("探险途中误入密室", 0, 0)); // 无变化
         return options;
     }
+    private List<EventOption> createHerbGardenOptions() {
+        List<EventOption> options = new ArrayList<>();
+        options.add(new EventOption("采摘灵药", 0, 0)); // 可能获得丹药或灵气
+        options.add(new EventOption("移植到洞府", 0, 0)); // 获得持续收益
+        options.add(new EventOption("研究药性", 0, 0)); // 提升炼丹知识
+        return options;
+    }
+    private List<EventOption> createAncientCaveOptions() {
+        List<EventOption> options = new ArrayList<>();
+        options.add(new EventOption("探索洞府", 0, 0)); // 高风险高回报
+        options.add(new EventOption("谨慎探查", 0, 0)); // 中等风险
+        options.add(new EventOption("设置禁制后离开", 0, 0)); // 低风险低回报
+        return options;
+    }
+    private List<EventOption> createHeavenlyTribulationOptions() {
+        List<EventOption> options = new ArrayList<>();
+        options.add(new EventOption("吸收天劫之力", 0, 0)); // 可能提升境界或受伤
+        options.add(new EventOption("炼制天劫丹", 0, 0)); // 获得特殊丹药
+        options.add(new EventOption("避开余波", 0, 0)); // 安全选项
+        return options;
+    }
+    private List<EventOption> createInnerDemonOptions() {
+        List<EventOption> options = new ArrayList<>();
+        options.add(new EventOption("正面对抗心魔", 0, 0)); // 高风险高回报
+        options.add(new EventOption("服用清心丹", 0, 0)); // 消耗丹药但安全
+        options.add(new EventOption("逃避现实", 0, 0)); // 负面效果
+        return options;
+    }
+    private List<EventOption> createSpiritBeastOptions() {
+        List<EventOption> options = new ArrayList<>();
+        options.add(new EventOption("尝试驯服", 0, 0));
+        options.add(new EventOption("喂食丹药", 0, 0));
+        options.add(new EventOption("驱赶灵兽", 0, 0));
+        return options;
+    }
+    private List<EventOption> createAlchemyEpiphanyOptions() {
+        List<EventOption> options = new ArrayList<>();
+        options.add(new EventOption("尝试创新丹方", 0, 0));
+        options.add(new EventOption("改良现有丹药", 0, 0));
+        options.add(new EventOption("记录心得", 0, 0));
+        return options;
+    }
+    private List<EventOption> createQiVeinEruptionOptions() {
+        List<EventOption> options = new ArrayList<>();
+        options.add(new EventOption("全力吸收", 0, 0));
+        options.add(new EventOption("引导灵气炼丹", 0, 0));
+        options.add(new EventOption("稳固灵脉", 0, 0));
+        return options;
+    }
+    private List<EventOption> createAncientFurnaceOptions() {
+        List<EventOption> options = new ArrayList<>();
+        options.add(new EventOption("尝试使用", 0, 0));
+        options.add(new EventOption("研究丹炉符文", 0, 0));
+        options.add(new EventOption("谨慎收藏", 0, 0));
+        return options;
+    }
+    private List<EventOption> createSpiritualRainOptions() {
+        List<EventOption> options = new ArrayList<>();
+        options.add(new EventOption("沐浴灵雨", 0, 0));
+        options.add(new EventOption("收集灵雨", 0, 0));
+        options.add(new EventOption("避雨观察", 0, 0));
+        return options;
+    }
+    private List<EventOption> createTimeSecretRealmOptions() {
+        List<EventOption> options = new ArrayList<>();
+        options.add(new EventOption("进入修炼", 0, 0));
+        options.add(new EventOption("炼制时之丹", 0, 0));
+        options.add(new EventOption("离开秘境", 0, 0));
+        return options;
+    }
+    private List<EventOption> createPillToxicityOptions() {
+        List<EventOption> options = new ArrayList<>();
+        options.add(new EventOption("运功排毒", 0, 0));
+        options.add(new EventOption("以毒攻毒", 0, 0));
+        options.add(new EventOption("硬抗毒性", 0, 0));
+        return options;
+    }
+    private List<EventOption> createAlchemyConferenceOptions() {
+        List<EventOption> options = new ArrayList<>();
+        options.add(new EventOption("参加比赛", 0, 0));
+        options.add(new EventOption("交易丹药", 0, 0));
+        options.add(new EventOption("观摩学习", 0, 0));
+        return options;
+    }
 
     // **显示事件弹窗的方法**
     private void showEventAlert(Event event) {
@@ -201,14 +297,54 @@ public class RandomEventHandler {
         Optional<ButtonType> result = alert.showAndWait();
         result.ifPresent(buttonType -> {
             // 根据事件类型调用不同的处理方法
-            if (event.getName().equals("道友切磋")) {
-                handleDuelResult(buttonType);
-            } else if (event.getName().equals("妖兽袭击")) {
-                handleMonsterAttackResult(buttonType);
-            } else if (event.getName().equals("秘境探索")) {
-                handleSecretRealmResult(buttonType);
-            } else {
-                handleNormalEventResult(event, buttonType);
+            switch (event.getName()) {
+                case "道友切磋":
+                    handleDuelResult(buttonType);
+                    break;
+                case "妖兽袭击":
+                    handleMonsterAttackResult(buttonType);
+                    break;
+                case "秘境探索":
+                    handleSecretRealmResult(buttonType);
+                    break;
+                case "灵药园奇遇":
+                    handleHerbGardenResult(buttonType);
+                    break;
+                case "古修士洞府":
+                    handleAncientCaveResult(buttonType);
+                    break;
+                case "天劫余韵":
+                    handleHeavenlyTribulationResult(buttonType);
+                    break;
+                case "心魔入侵":
+                    handleInnerDemonResult(buttonType);
+                    break;
+                case "灵兽认主":
+                    handleSpiritBeastResult(buttonType);
+                    break;
+                case "丹道顿悟":
+                    handleAlchemyEpiphanyResult(buttonType);
+                    break;
+                case "灵脉爆发":
+                    handleQiVeinEruptionResult(buttonType);
+                    break;
+                case "上古丹炉":
+                    handleAncientFurnaceResult(buttonType);
+                    break;
+                case "灵雨降临":
+                    handleSpiritualRainResult(buttonType);
+                    break;
+                case "时间秘境":
+                    handleTimeSecretRealmResult(buttonType);
+                    break;
+                case "丹毒发作":
+                    handlePillToxicityResult(buttonType);
+                    break;
+                case "丹道大会":
+                    handleAlchemyConferenceResult(buttonType);
+                    break;
+                default:
+                    handleNormalEventResult(event, buttonType);
             }
         });
     }
@@ -310,6 +446,298 @@ public class RandomEventHandler {
         double winChance = 0.5 + (playerLevel - npcLevelValue) * 0.15;
         return random.nextDouble() < winChance;
     }
+    private void handleHerbGardenResult(ButtonType choice) {
+        String choiceText = choice.getText();
+        if (choiceText.equals("采摘灵药")) {
+            if (random.nextDouble() < 0.7) {
+                handlePillReward(1 + random.nextInt(3)); // 获得1-3颗随机丹药
+            } else {
+                showRewardAlert("采摘失败，灵药枯萎了");
+            }
+        } else if (choiceText.equals("移植到洞府")) {
+            mainController.increaseQiRate(0.5); // 永久增加灵气增长速度
+            showRewardAlert("成功移植灵药，灵气增长速度+0.5/s");
+        } else {
+            // 研究药性
+            String pillId = getRandomPillId();
+            if (pillId != null) {
+                AlchemyController.PillData pill = mainController.getSavedPills().get(pillId);
+                pill.rate += 0.1; // 提升该丹药的效果
+                showRewardAlert("深入研究" + pill.pillName + "的药性，其效果提升了10%");
+            }
+        }
+    }
+    private void handleAncientCaveResult(ButtonType choice) {
+        String choiceText = choice.getText();
+        if (choiceText.equals("探索洞府")) {
+            if (random.nextDouble() < 0.4) {
+                int rarePillCount = 2 + random.nextInt(3);
+                handlePillReward(rarePillCount); // 获得2-4颗稀有丹药
+            } else {
+                handlePillPenalty(2); // 失去2颗随机丹药
+            }
+        } else if (choiceText.equals("谨慎探查")) {
+            int qiGain = getQiChangeRange()[1] * 3;
+            mainController.updateQi(qiGain);
+            showRewardAlert("获得 " + qiGain + " 点灵气");
+        } else {
+            // 设置禁制后离开
+            showRewardAlert("你标记了洞府位置，以后可以再来探索");
+        }
+    }
+    private void handleHeavenlyTribulationResult(ButtonType choice) {
+        String choiceText = choice.getText();
+        if (choiceText.equals("吸收天劫之力")) {
+            if (random.nextDouble() < 0.05) {
+                // 小概率直接提升境界
+                mainController.breakthrough();
+            } else {
+                handlePillPenalty(3); // 失去3颗随机丹药
+            }
+        } else if (choiceText.equals("炼制天劫丹")) {
+            // 获得特殊丹药"天劫丹"
+            AlchemyController.PillData tribulationPill = new AlchemyController.PillData(
+                    "tribulation_pill", "天劫丹", 0, 2.0, 0.05, mainController.getStageLevel());
+            mainController.getSavedPills().put(tribulationPill.pillId, tribulationPill);
+            showRewardAlert("成功炼制天劫丹，获得强大的修炼加成");
+        } else {
+            showRewardAlert("你安全避开了天劫余波");
+        }
+    }
+    private void handleInnerDemonResult(ButtonType choice) {
+        String choiceText = choice.getText();
+        if (choiceText.equals("正面对抗心魔")) {if (random.nextDouble() < 0.5) {
+                // 战胜心魔
+                mainController.increaseQiRate(1.0);
+                showRewardAlert("战胜心魔，道心更加稳固，修炼速度+1.0/s");
+            } else {
+                handlePillPenalty(4); // 失去4颗随机丹药
+            }
+        } else if (choiceText.equals("服用清心丹")) {
+            String pillId = "clear_mind_pill"; // 假设清心丹ID
+            if (mainController.getSavedPills().containsKey(pillId) ){
+                AlchemyController.PillData pill = mainController.getSavedPills().get(pillId);
+                if (pill.count > 0) {
+                    pill.count--;
+                    showRewardAlert("使用清心丹成功驱散心魔");
+                } else {
+                    handleInnerDemonResult(new ButtonType("逃避现实")); // 没有丹药则按逃避处理
+                }
+            } else {
+                handleInnerDemonResult(new ButtonType("逃避现实")); // 没有丹药则按逃避处理
+            }
+        } else {
+            // 逃避现实
+            mainController.deductQi(mainController.getQi() / 2); // 失去一半灵气
+            showRewardAlert("心魔肆虐，你失去了大量灵气");
+        }
+    }
+    private void handleSpiritBeastResult(ButtonType choice) {
+        String choiceText = choice.getText();
+        if (choiceText.equals("尝试驯服")) {
+            if (random.nextDouble() < 0.6) {
+                // 成功驯服
+                mainController.increaseQiRate(0.8);
+                showRewardAlert("成功驯服灵兽，修炼速度+0.8/s");
+            } else {
+                handlePillPenalty(1); // 驯服失败失去1颗丹药
+            }
+        } else if (choiceText.equals("喂食丹药")) {
+            String pillId = getRandomPillId();
+            if (pillId != null && mainController.getSavedPills().get(pillId).count > 0) {
+                AlchemyController.PillData pill = mainController.getSavedPills().get(pillId);
+                pill.count--;
+                if (random.nextDouble() < 0.8) {
+                    // 灵兽满意
+                    handlePillReward(2); // 获得2颗随机丹药作为回报
+                } else {
+                    showRewardAlert("灵兽吃完丹药就跑掉了");
+                }
+            } else {
+                showRewardAlert("没有丹药可喂食");
+            }
+        } else {
+            showRewardAlert("你驱赶了灵兽，它离开时留下了一些灵气");
+            mainController.updateQi(getQiChangeRange()[1]);
+        }
+    }
+    private void handleAlchemyEpiphanyResult(ButtonType choice) {
+        String choiceText = choice.getText();
+        if (choiceText.equals("尝试创新丹方")) {
+            if (random.nextDouble() < 0.4) {
+                // 创新成功，获得随机新丹药
+                String newPillId = "new_pill_" + System.currentTimeMillis();
+                AlchemyController.PillData newPill = new AlchemyController.PillData(
+                        newPillId, "创新丹药", 0,
+                        1.5 + random.nextDouble(),
+                        0.03 + random.nextDouble() * 0.02,
+                        mainController.getStageLevel());
+                newPill.count = 1;
+                mainController.getSavedPills().put(newPillId, newPill);
+                showRewardAlert("创新成功！获得新型丹药：" + newPill.pillName);
+            } else {
+                handlePillPenalty(2); // 创新失败损失材料
+            }
+        } else if (choiceText.equals("改良现有丹药")) {
+            String pillId = getRandomPillId();
+            if (pillId != null) {
+                AlchemyController.PillData pill = mainController.getSavedPills().get(pillId);
+                pill.rate *= 1.2; // 效果提升20%
+                showRewardAlert(pill.pillName + "的效果提升了20%");
+            }
+        } else {
+            // 记录心得
+            mainController.increaseQiRate(0.3);
+            showRewardAlert("记录心得使你对丹道理解更深，修炼速度+0.3/s");
+        }
+    }
+    private void handleQiVeinEruptionResult(ButtonType choice) {
+        String choiceText = choice.getText();
+        int[] range = getQiChangeRange();
+        if (choiceText.equals("全力吸收")) {
+            int qiGain = range[1] * 5;
+            mainController.updateQi(qiGain);
+            showRewardAlert("吸收了大量灵气，获得 " + qiGain + " 点灵气");
+        } else if (choiceText.equals("引导灵气炼丹")) {
+            String pillId = getRandomPillId();
+            if (pillId != null) {
+                AlchemyController.PillData pill = mainController.getSavedPills().get(pillId);
+                int bonus = 3 + random.nextInt(3); // 3-5颗
+                pill.count += bonus;
+                showRewardAlert("利用灵脉灵气成功炼制出 " + bonus + " 颗" + pill.pillName);
+            } else {
+                showRewardAlert("没有可炼制的丹方");
+            }
+        } else {
+            // 稳固灵脉
+            mainController.increaseQiRate(0.7);
+            showRewardAlert("稳固后的灵脉持续为你提供灵气，修炼速度+0.7/s");
+        }
+    }
+    private void handleAncientFurnaceResult(ButtonType choice) {
+        String choiceText = choice.getText();
+        if (choiceText.equals("尝试使用")) {
+            if (random.nextDouble() < 0.5) {
+                // 成功炼制
+                int pillCount = 2 + random.nextInt(4); // 2-5颗
+                handlePillReward(pillCount);
+            } else {
+                handlePillPenalty(2); // 炸炉损失材料
+            }
+        } else if (choiceText.equals("研究丹炉符文")) {
+            // 永久提升所有丹药效果
+            for (AlchemyController.PillData pill : mainController.getSavedPills().values()) {
+                pill.rate *= 1.15;
+                pill.successRateImpact *= 1.15;
+            }
+            showRewardAlert("研究符文使你对丹道理解更深，所有丹药效果提升15%");
+        } else {
+            showRewardAlert("你将丹炉小心收藏，以后可以慢慢研究");
+        }
+    }
+    private void handleSpiritualRainResult(ButtonType choice) {
+        String choiceText = choice.getText();
+        if (choiceText.equals("沐浴灵雨")) {
+            // 随机效果
+            double effect = random.nextDouble();
+            if (effect < 0.3) {
+                mainController.increaseQiRate(0.5);
+                showRewardAlert("灵雨洗涤身心，修炼速度+0.5/s");
+            } else if (effect < 0.7) {
+                int qiGain = getQiChangeRange()[1] * 2;
+                mainController.updateQi(qiGain);
+                showRewardAlert("吸收灵雨精华，获得 " + qiGain + " 点灵气");
+            } else {
+                showRewardAlert("灵雨对你没有明显效果");
+            }
+        } else if (choiceText.equals("收集灵雨")) {
+            // 获得特殊丹药"灵雨丹"
+            AlchemyController.PillData rainPill = new AlchemyController.PillData(
+                    "rain_pill", "灵雨丹", 0, 1.2, 0.03, mainController.getStageLevel());
+            rainPill.count = 3 + random.nextInt(3); // 3-5颗
+            mainController.getSavedPills().put(rainPill.pillId, rainPill);
+            showRewardAlert("成功收集灵雨，炼制出 " + rainPill.count + " 颗灵雨丹");
+        } else {
+            showRewardAlert("你避开了灵雨，没有获得任何效果");
+        }
+    }
+    private void handleTimeSecretRealmResult(ButtonType choice) {
+        String choiceText = choice.getText();
+        if (choiceText.equals("进入修炼")) {
+            // 获得相当于10分钟自动修炼的灵气
+            int qiGain = (int)Math.round(mainController.getQiRate() * 600);
+            mainController.updateQi(qiGain);
+            showRewardAlert("在时间秘境中修炼良久，获得 " + qiGain + " 点灵气");
+        } else if (choiceText.equals("炼制时之丹")) {
+            // 获得特殊丹药"时之丹"
+            AlchemyController.PillData timePill = new AlchemyController.PillData(
+                    "time_pill", "时之丹", 0, 3.0, 0.1, mainController.getStageLevel());
+            timePill.count = 1;
+            mainController.getSavedPills().put(timePill.pillId, timePill);
+            showRewardAlert("利用秘境时间之力炼制出1颗时之丹");
+        } else {
+            showRewardAlert("你离开了时间秘境");
+        }
+    }
+    private void handlePillToxicityResult(ButtonType choice) {
+        String choiceText = choice.getText();
+        if (choiceText.equals("运功排毒")) {
+            int qiLoss = getQiChangeRange()[1] / 2;
+            mainController.deductQi(qiLoss);
+            showRewardAlert("消耗 " + qiLoss + " 点灵气排出丹毒");
+        } else if (choiceText.equals("以毒攻毒")) {
+            String pillId = getRandomPillId();
+            if (pillId != null && mainController.getSavedPills().get(pillId).count > 0) {
+                AlchemyController.PillData pill = mainController.getSavedPills().get(pillId);
+                pill.count--;
+                if (random.nextDouble() < 0.6) {
+                    showRewardAlert("以毒攻毒成功化解丹毒");
+                } else {
+                    handlePillPenalty(1); // 方法失败再失去1颗
+                }
+            } else {
+                handlePillToxicityResult(new ButtonType("硬抗毒性")); // 没有丹药则按硬抗处理
+            }
+        } else {
+            // 硬抗毒性
+            mainController.increaseQiRate(-0.3); // 修炼速度降低
+            showRewardAlert("丹毒影响修炼，修炼速度-0.3/s");
+        }
+    }
+    private void handleAlchemyConferenceResult(ButtonType choice) {
+        String choiceText = choice.getText();
+        if (choiceText.equals("参加比赛")) {
+            if (random.nextDouble() < 0.5) {
+                // 比赛获胜
+                String rarePillId = "rare_pill_" + System.currentTimeMillis();
+                AlchemyController.PillData rarePill = new AlchemyController.PillData(
+                        rarePillId, "大会奖励丹", 0,
+                        2.0 + random.nextDouble(),
+                        0.05 + random.nextDouble() * 0.03,
+                        mainController.getStageLevel());
+                rarePill.count = 1;
+                mainController.getSavedPills().put(rarePillId, rarePill);
+                showRewardAlert("比赛获胜！获得稀有丹药：" + rarePill.pillName);
+            } else {
+                handlePillPenalty(3); // 比赛失败损失材料
+            }
+        } else if (choiceText.equals("交易丹药")) {
+            String pillId = getRandomPillId();
+            if (pillId != null && mainController.getSavedPills().get(pillId).count > 1) {
+                AlchemyController.PillData pill = mainController.getSavedPills().get(pillId);
+                int tradeCount = Math.min(3, pill.count / 2);
+                pill.count -= tradeCount;
+                handlePillReward(tradeCount); // 获得等量其他丹药
+            } else {
+                showRewardAlert("没有足够丹药进行交易");
+            }
+        } else {
+            // 观摩学习
+            mainController.increaseQiRate(0.4);
+            showRewardAlert("从其他炼丹师处学到技巧，修炼速度+0.4/s");
+        }
+    }
+
 
     // 新增：获取随机NPC境界
     private NpcLevel getRandomNpcLevel() {

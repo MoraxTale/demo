@@ -96,6 +96,63 @@ public class Controller {
     private TreasureController treasureController;
     private TreasureShopController treasureShopController;
     private Stage treasureStage, treasureShopStage;
+    private AdventureState adventureState;
+    private AnimationTimer adventureCheckTimer;
+
+    @FXML
+    private void handleAdventureButton() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("AdventureView.fxml"));
+            Parent root = loader.load();
+            AdventureController controller = loader.getController();
+            controller.setMainController(this);
+            controller.loadAdventureState(this.adventureState);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+
+            // 添加窗口关闭监听
+            stage.setOnHidden(event -> {
+                // 将最新状态同步回主控制器
+                this.adventureState = controller.getAdventureState();
+            });
+
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private void startAdventureCheckTimer() {
+        adventureCheckTimer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                if (adventureState != null && adventureState.getStartTime() > 0) {
+                    long elapsed = System.currentTimeMillis() - adventureState.getStartTime();
+                    long remaining = calculateAdventureTime(adventureState.getCurrentArea()) - elapsed;
+
+                    if (remaining <= 0) {
+                        completeAdventureInBackground();
+                    }
+                }
+            }
+        };
+        adventureCheckTimer.start();
+    }
+    private long calculateAdventureTime(int area) {
+        return (long) (3600000 * Math.pow(2, area - 1));
+    }
+
+    private void completeAdventureInBackground() {
+        int area = adventureState.getCurrentArea();
+        int baseReward = 1000 * area;
+        double speedBonus = getQiRate() * 3600;
+        updateQi((int) (baseReward + speedBonus));
+
+        adventureState.getDailyCounts().put(area,
+                adventureState.getDailyCounts().getOrDefault(area, 0) + 1);
+        adventureState.incrementTotalCompleted();
+        adventureState.setStartTime(0); // 重置开始时间
+    }
     public long calculateMaxOfflineTime() {
         long baseTime = GameState.BASE_MAX_OFFLINE_TIME_MS; // 60秒基础
 
@@ -172,7 +229,7 @@ public class Controller {
         // 为炼丹按钮添加点击事件处理逻辑
         btnAlchemy.setOnAction(event -> openAlchemyPanel());
         // 为修炼按钮添加点击事件处理逻辑
-        btnCultivate.setOnAction(event -> updataQi(1));
+        btnCultivate.setOnAction(event -> updataQi(1000));
         // 初始化随机事件处理器
         randomEventHandler = new RandomEventHandler(this);
         // 再次启动灵气自动增长的定时器（可能是代码冗余，可考虑优化）
@@ -198,6 +255,7 @@ public class Controller {
         }
         // 在 initialize() 方法末尾添加：
         showStoryDialog();
+        startAdventureCheckTimer();
     }
     private void showStoryDialog() {
         try {
@@ -291,10 +349,12 @@ public class Controller {
                     GameState state = new GameState(
                             qi.get(),
                             qiRate.get(),
-                            null,
+                            savedPills,
                             treasureController != null ? treasureController.getTreasures() : null,
                             stageLevel,
-                            currentTime
+                            System.currentTimeMillis(),
+                            adventureState
+
                     );
                     oos.writeObject(state);
                 } else {
@@ -304,7 +364,8 @@ public class Controller {
                             savedPills,
                             treasureController.getTreasures(), // 确保保存法宝数据
                             stageLevel,
-                            System.currentTimeMillis()
+                            System.currentTimeMillis(),
+                            adventureState
                     );
                     oos.writeObject(state);
                     System.out.println("[保存] 存档时间已记录: " + currentTime);
@@ -397,7 +458,9 @@ public class Controller {
     public void loadGame(String filePath) {
         try {
             File file = new File(filePath);
-
+            if (alchemyStage != null && alchemyStage.isShowing()) {
+                alchemyStage.requestFocus();
+            }
             if (file.length() == 0) {
                 System.out.println("存档文件为空，无法加载。");
                 return;

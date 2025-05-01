@@ -42,6 +42,11 @@ public class AlchemyController {
     public PillConfig getPillConfig(String pillId) {
         return pillConfigMap.get(pillId);
     }
+
+    public Iterable<? extends PillConfig> getAvailablePillConfigs() {
+        return null;
+    }
+
     /**
      * 丹药数据内部类，用于存储丹药的成本、成功率和购买数量
      */

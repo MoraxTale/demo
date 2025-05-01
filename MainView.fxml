@@ -52,7 +52,7 @@
 
             <!-- 右侧按钮组 -->
             <HBox alignment="CENTER_LEFT" spacing="15">
-                <Button text="冒险" styleClass="rect-btn"/>
+                <Button text="冒险" styleClass="rect-btn" onAction="#handleAdventureButton" fx:id="adventureBtn" />
                 <Button text="渡劫" styleClass="rect-btn-red" fx:id="btnBreakthrough" onAction="#breakthrough"/>
             </HBox>
         </HBox>
