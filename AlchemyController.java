@@ -1,5 +1,7 @@
 package com.example.demo;
 
+
+
 // 导入 JavaFX FXML 相关类
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -19,6 +21,7 @@ import java.io.Serializable;
 // 导入 Java 集合框架中的 LinkedHashMap 实现类和 Map 接口
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 /**
  * 炼丹控制器类，负责处理炼丹界面的逻辑和操作
@@ -44,11 +47,6 @@ public class AlchemyController {
     public PillConfig getPillConfig(String pillId) {
         return pillConfigMap.get(pillId);
     }
-    public void setMainController(Controller controller) {
-        this.mainController = controller;
-        initializeCustomPills(); // 初始化丹药数据
-    }
-
     /**
      * 丹药数据内部类，用于存储丹药的成本、成功率和购买数量
      */
@@ -78,28 +76,45 @@ public class AlchemyController {
     }
 
 
-    /**
-     * 丹药数据类（包含唯一ID和名称）
-     */
+    /// 丹药数据类（包含唯一ID和名称）
+
     public static class PillData implements Serializable {
+        // 序列化版本号，确保序列化和反序列化的兼容性
         @Serial
         private static final long serialVersionUID = 1L;
         String pillId;
         String pillName;
+        // 丹药成本
         int cost;
-        double rate;          // 灵气增速配置（保留）
-        transient double successRateImpact; // 渡劫成功率加成（标记为不序列化）
-        int count = 0;        // 丹药数量
+        // 丹药成功率
+        double rate;
+        // 已购买的丹药数量
+        double successRateImpact;
+        int count = 0;
         int level;
-
-        public PillData(String pillId, String pillName, int cost, double rate, double successRateImpact, int level) {
+        /**
+         * 构造方法，初始化丹药数据对象
+         * @param cost 丹药成本
+         * @param rate 丹药成功率
+         */
+        public PillData(String pillId, String pillName, int cost, double rate, double successRateImpact,int level) {
             this.pillId = pillId;
             this.pillName = pillName;
             this.cost = cost;
-            this.rate = rate;      // 保留配置值
+            this.rate = rate;
             this.successRateImpact = successRateImpact;
-            this.level = level;
+            this.level =level;
         }
+    }
+
+    /**
+     * 设置主控制器的方法
+     * @param controller 主控制器对象
+     */
+    public void setMainController(Controller controller) {
+        this.mainController = controller;
+        // 加载丹药数据
+        initializeCustomPills();
     }
     // 初始化自定义丹药（示例数据）
     void initializeCustomPills() {
@@ -107,104 +122,104 @@ public class AlchemyController {
         pillConfigMap.clear();
 
         // 第1级丹药 (凡人可用的基础丹药)
-        addPillConfig(1, "pill_001", "聚气丹", 500, 0.5, 0.01);
-        addPillConfig(1, "pill_002", "养元丹", 600, 0.6, 0.012);
+        addPillConfig(1, "pill_001", "聚气丹", 1, 0.1, 0.005);
+        addPillConfig(1, "pill_002", "养元丹", 1, 0.15, 0.01);
 
         // 第2级丹药 (炼气期)
-        addPillConfig(2, "pill_003", "凝神丹", 800, 0.8, 0.015);
-        addPillConfig(2, "pill_004", "固本丹", 1000, 1.0, 0.018);
+        addPillConfig(2, "pill_003", "凝神丹", 3, 0.2, 0.005);
+        addPillConfig(2, "pill_004", "固本丹", 3, 1.25, 0.01);
 
         // 第3级丹药 (筑基期)
-        addPillConfig(3, "pill_005", "洗髓丹", 1200, 1.2, 0.02);
-        addPillConfig(3, "pill_006", "通脉丹", 1500, 1.5, 0.025);
+        addPillConfig(3, "pill_005", "洗髓丹", 10, 0.3, 0.005);
+        addPillConfig(3, "pill_006", "通脉丹", 10, 0.35, 0.02);
 
         // 第4级丹药 (金丹期)
-        addPillConfig(4, "pill_007", "金丹丸", 2000, 2.0, 0.03);
-        addPillConfig(4, "pill_008", "玉液丹", 2500, 2.5, 0.035);
+        addPillConfig(4, "pill_007", "金丹丸", 30, 0.4, 0.005);
+        addPillConfig(4, "pill_008", "玉液丹", 30, 0.45, 0.01);
 
         // 第5级丹药 (元婴期)
-        addPillConfig(5, "pill_009", "元婴造化丹", 3000, 3.0, 0.04);
-        addPillConfig(5, "pill_010", "九转还魂丹", 3500, 3.5, 0.045);
+        addPillConfig(5, "pill_009", "元婴造化丹", 90, 0.5, 0.005);
+        addPillConfig(5, "pill_010", "九转还魂丹", 90, 0.55, 0.01);
 
         // 第6级丹药 (化神期)
-        addPillConfig(6, "pill_011", "化神丹", 4000, 4.0, 0.05);
-        addPillConfig(6, "pill_012", "天元神丹", 4500, 4.5, 0.055);
+        addPillConfig(6, "pill_011", "化神丹", 270, 0.6, 0.005);
+        addPillConfig(6, "pill_012", "天元神丹", 270, 0.65, 0.01);
 
         // 第7级丹药 (渡劫期)
-        addPillConfig(7, "pill_013", "渡劫丹", 5000, 5.0, 0.06);
-        addPillConfig(7, "pill_014", "避劫丹", 5500, 5.5, 0.065);
+        addPillConfig(7, "pill_013", "渡劫丹", 810, 0.7, 0.005);
+        addPillConfig(7, "pill_014", "避劫丹", 810, 0.75, 0.01);
 
         // 第8级丹药 (大乘期)
-        addPillConfig(8, "pill_015", "大乘玄丹", 6000, 6.0, 0.07);
-        addPillConfig(8, "pill_016", "乾坤一气丹", 7000, 7.0, 0.075);
+        addPillConfig(8, "pill_015", "大乘玄丹", 2430, 0.8, 0.005);
+        addPillConfig(8, "pill_016", "乾坤一气丹", 2430, 0.85, 0.01);
 
         // 第9级丹药 (大罗金仙)
-        addPillConfig(9, "pill_017", "大罗金丹", 8000, 8.0, 0.08);
-        addPillConfig(9, "pill_018", "混元丹", 9000, 9.0, 0.085);
+        addPillConfig(9, "pill_017", "大罗金丹", 7290, 0.9, 0.005);
+        addPillConfig(9, "pill_018", "混元丹", 7290, 0.95, 0.01);
 
         // 第10级丹药 (仙君)
-        addPillConfig(10, "pill_019", "仙君玉丹", 10000, 10.0, 0.09);
-        addPillConfig(10, "pill_020", "太乙丹", 11000, 11.0, 0.095);
+        addPillConfig(10, "pill_019", "仙君玉丹", 21000, 1.0, 0.005);
+        addPillConfig(10, "pill_020", "太乙丹", 21000, 1.5, 0.01);
 
         // 第11级丹药 (仙王)
-        addPillConfig(11, "pill_021", "仙王丹", 12000, 12.0, 0.10);
-        addPillConfig(11, "pill_022", "玄天丹", 13000, 13.0, 0.105);
+        addPillConfig(11, "pill_021", "仙王丹", 65000, 2.0, 0.005);
+        addPillConfig(11, "pill_022", "玄天丹", 65000, 2.5, 0.01);
 
         // 第12级丹药 (仙帝)
-        addPillConfig(12, "pill_023", "仙帝丹", 14000, 14.0, 0.11);
-        addPillConfig(12, "pill_024", "紫霄丹", 15000, 15.0, 0.115);
+        addPillConfig(12, "pill_023", "仙帝丹", 190000, 3.0, 0.005);
+        addPillConfig(12, "pill_024", "紫霄丹", 190000, 3.5, 0.01);
 
         // 第13级丹药 (仙尊)
-        addPillConfig(13, "pill_025", "仙尊丹", 16000, 16.0, 0.12);
-        addPillConfig(13, "pill_026", "九转金丹", 17000, 17.0, 0.125);
+        addPillConfig(13, "pill_025", "仙尊丹", 590000, 4.0, 0.005);
+        addPillConfig(13, "pill_026", "九转金丹", 590000, 4.5, 0.01);
 
         // 第14级丹药 (仙圣)
-        addPillConfig(14, "pill_027", "仙圣丹", 18000, 18.0, 0.13);
-        addPillConfig(14, "pill_028", "混沌丹", 19000, 19.0, 0.135);
+        addPillConfig(14, "pill_027", "仙圣丹", 1770000, 5.0, 0.005);
+        addPillConfig(14, "pill_028", "混沌丹", 1770000, 5.5, 0.01);
 
         // 第15级丹药 (仙祖)
-        addPillConfig(15, "pill_029", "仙祖丹", 20000, 20.0, 0.14);
-        addPillConfig(15, "pill_030", "鸿蒙丹", 22000, 22.0, 0.145);
+        addPillConfig(15, "pill_029", "仙祖丹", 5000000, 6.0, 0.005);
+        addPillConfig(15, "pill_030", "鸿蒙丹", 5300000, 6.5, 0.01);
 
         // 第16级丹药 (道君)
-        addPillConfig(16, "pill_031", "道君丹", 24000, 24.0, 0.15);
-        addPillConfig(16, "pill_032", "太初丹", 26000, 26.0, 0.155);
+        addPillConfig(16, "pill_031", "道君丹", 15900000, 7.0, 0.005);
+        addPillConfig(16, "pill_032", "太初丹", 15900000, 7.5, 0.01);
 
         // 第17级丹药 (道王)
-        addPillConfig(17, "pill_033", "道王丹", 28000, 28.0, 0.16);
-        addPillConfig(17, "pill_034", "玄黄丹", 30000, 30.0, 0.165);
+        addPillConfig(17, "pill_033", "道王丹", 47800000, 8.0, 0.005);
+        addPillConfig(17, "pill_034", "玄黄丹", 47800000, 8.5, 0.01);
 
         // 第18级丹药 (道帝)
-        addPillConfig(18, "pill_035", "道帝丹", 32000, 32.0, 0.17);
-        addPillConfig(18, "pill_036", "造化丹", 34000, 34.0, 0.175);
+        addPillConfig(18, "pill_035", "道帝丹", 143000000, 9.0, 0.005);
+        addPillConfig(18, "pill_036", "造化丹", 143000000, 9.5, 0.01);
 
         // 第19级丹药 (道尊)
-        addPillConfig(19, "pill_037", "道尊丹", 36000, 36.0, 0.18);
-        addPillConfig(19, "pill_038", "天命丹", 38000, 38.0, 0.185);
+        addPillConfig(19, "pill_037", "道尊丹", 430000000, 10.0, 0.005);
+        addPillConfig(19, "pill_038", "天命丹", 430000000, 10.5, 0.01);
 
         // 第20级丹药 (道圣)
-        addPillConfig(20, "pill_039", "道圣丹", 40000, 40.0, 0.19);
-        addPillConfig(20, "pill_040", "永恒丹", 42000, 42.0, 0.195);
+        addPillConfig(20, "pill_039", "道圣丹", 1290000000, 11.0, 0.005);
+        addPillConfig(20, "pill_040", "永恒丹", 1290000000, 11.5, 0.01);
 
         // 第21级丹药 (道祖)
-        addPillConfig(21, "pill_041", "道祖丹", 45000, 45.0, 0.20);
-        addPillConfig(21, "pill_042", "创世丹", 48000, 48.0, 0.205);
+        addPillConfig(21, "pill_041", "道祖丹", 2000000000, 12.0, 0.005);
+        addPillConfig(21, "pill_042", "创世丹", 2000000000, 12.5, 0.01);
 
         // 第22级丹药 (混元大罗金仙)
-        addPillConfig(22, "pill_043", "混元丹", 52000, 52.0, 0.21);
-        addPillConfig(22, "pill_044", "无极丹", 55000, 55.0, 0.215);
+        addPillConfig(22, "pill_043", "混元丹", 2000000000, 13.0, 0.005);
+        addPillConfig(22, "pill_044", "无极丹", 2000000000, 13.5, 0.01);
 
         // 第23级丹药 (混元无极金仙)
-        addPillConfig(23, "pill_045", "无极金丹", 60000, 60.0, 0.22);
-        addPillConfig(23, "pill_046", "太虚丹", 65000, 65.0, 0.225);
+        addPillConfig(23, "pill_045", "无极金丹", 2000000000, 14.0, 0.005);
+        addPillConfig(23, "pill_046", "太虚丹", 2000000000, 14.5, 0.01);
 
         // 第24级丹药 (混沌天尊)
-        addPillConfig(24, "pill_047", "混沌丹", 70000, 70.0, 0.23);
-        addPillConfig(24, "pill_048", "鸿蒙丹", 75000, 75.0, 0.235);
+        addPillConfig(24, "pill_047", "混沌丹", 2000000000, 15.0, 0.005);
+        addPillConfig(24, "pill_048", "鸿蒙丹", 2000000000, 15.5, 0.01);
 
         // 第25级丹药 (鸿蒙至尊)
-        addPillConfig(25, "pill_049", "鸿蒙至尊丹", 80000, 80.0, 0.24);
-        addPillConfig(25, "pill_050", "大道丹", 100000, 100.0, 0.25);
+        addPillConfig(25, "pill_049", "鸿蒙至尊丹", 2000000000, 16.0, 0.005);
+        addPillConfig(25, "pill_050", "大道丹", 2000000000, 16.5, 0.01);
 
         updateAvailablePills();
     }
@@ -322,7 +337,7 @@ public class AlchemyController {
         }
     }
 
-    private void generateNewPills() {
+    void generateNewPills() {
         pills.clear();
         int index = 0;
         for (PillConfig config : customPills) {
