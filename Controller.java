@@ -535,7 +535,7 @@ public class Controller {
      * 渡劫逻辑方法
      */
     @FXML
-    private void breakthrough() {
+    void breakthrough() {
         // 获取当前境界对应的消耗量（修改点：动态计算）
         int currentCost = getCurrentBreakthroughCost();
         // 灵气不足判断（修改点：使用动态消耗量）
@@ -901,5 +901,9 @@ public class Controller {
         } else {
             new Alert(Alert.AlertType.ERROR, "弹幕系统初始化失败").show();
         }
+    }
+
+    public double getQiRate() {
+        return qiRate.get(); // 假设 qiRate 是 DoubleProperty
     }
 }
