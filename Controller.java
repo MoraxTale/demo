@@ -1,7 +1,7 @@
 // 声明包名
 package com.example.demo;
-
 // 导入 JavaFX 属性相关类，用于创建和管理可观察的属性
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -12,6 +12,7 @@ import javafx.animation.AnimationTimer;
 // 导入 JavaFX 属性相关类
 import javafx.beans.property.*;
 // 导入 JavaFX FXML 相关类，用于加载 FXML 文件和处理 FXML 元素
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 // 导入 JavaFX 场景图相关类
@@ -22,17 +23,34 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 // 导入 JavaFX 窗口相关类
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import javafx.stage.Modality;
 // 导入 Java 输入输出相关类
 import java.io.*;
 // 导入 JavaFX 文件选择器类
 import javafx.stage.FileChooser;
+import javafx.stage.StageStyle;
 // 导入 Java 集合框架中的 Map 接口
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-
+import javafx.animation.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.*;
+import javafx.util.Duration;
+import javafx.geometry.Bounds;
+import java.util.Random; // 添加这一行
+// 新增导入
+import javafx.scene.effect.Glow;
+import javafx.scene.effect.BoxBlur;
+import javafx.scene.text.Text;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 /**
  * 主控制器类，负责处理游戏的主要逻辑和界面交互
@@ -45,7 +63,7 @@ public class Controller {
     // 成功率衰减因子，每次渡劫成功后成功率会按此因子衰减
     private static final double DECAY_FACTOR = 0.8;
     // 渡劫所需的灵气消耗，固定值
-    private static final int BASE_BREAKTHROUGH_COST = 10000;
+    private static final int BASE_BREAKTHROUGH_COST = 1000;
     private final DoubleProperty actualSuccessRate = new SimpleDoubleProperty(BASE_SUCCESS_RATE);
 
     private long lastUpdate; // 声明为类成员变量
@@ -74,7 +92,7 @@ public class Controller {
     // 炼丹界面的窗口对象
     private Stage alchemyStage;
     // 基础点击加成
-    private int clickBonus = 5;
+    private int clickBonus = 1;
     // 当前境界属性，使用 JavaFX 的 StringProperty 实现可观察
     private final StringProperty currentStage = new SimpleStringProperty("凡人");
     // 渡劫成功率属性，使用 JavaFX 的 DoubleProperty 实现可观察
@@ -87,27 +105,163 @@ public class Controller {
             "仙王", "仙帝", "仙尊", "仙圣", "仙祖",
             "道君", "道王", "道帝", "道尊", "道圣",
             "道祖", "混元大罗金仙", "混元无极金仙", "混沌天尊", "鸿蒙至尊"};
-    private Map<String, AlchemyController.PillData> savedPills = new LinkedHashMap<>();
+    private final Map<String, AlchemyController.PillData> savedPills = new LinkedHashMap<>();
     // 控制器和窗口对象
     private TreasureController treasureController;
     private TreasureShopController treasureShopController;
     private Stage treasureStage, treasureShopStage;
-    private static final long MAX_OFFLINE_TIME_MS = 1 * 60 * 1000;
     private AdventureState adventureState;
     private AnimationTimer adventureCheckTimer;
+    @FXML
+    private Pane effectLayer; // 仙气粒子层容器（与FXML中的fx:id对应）
+    @FXML
+    private ImageView character; // 主角图片容器（与FXML中的fx:id对应）
+    private final Timeline characterAnimation = new Timeline(); // 角色动画时间线
+    private final Random random = new Random(); // 用于生成随机数
 
-    public int getStageLevel() {
-        return stageLevel;
+
+
+    private void initializeCharacterAnimation() {
+        try {
+            Image charImage = new Image("file:E://JAVA%20FX//demo//pic//character.png");
+            character.setImage(charImage);
+        } catch (Exception e) {
+            System.err.println("主角图片加载失败: " + e.getMessage());
+        }
+
+        // 保留浮动动画，但移除任何效果
+        TranslateTransition floatAnim = new TranslateTransition(Duration.seconds(2), character);
+        floatAnim.setFromY(-10);
+        floatAnim.setToY(10);
+        floatAnim.setAutoReverse(true);
+        floatAnim.setCycleCount(Animation.INDEFINITE);
+        floatAnim.play();
+
+        // 移除呼吸光效的透明度变化（如果需要完全无效果）
+        FadeTransition glowAnim = new FadeTransition(Duration.seconds(1.5), character);
+        glowAnim.setFromValue(1.0); // 保持完全不透明
+        glowAnim.setToValue(1.0);   // 取消淡入淡出
+        glowAnim.play();
+    }
+    private void startParticleEffect() {
+        // ================== 第一层：主仙气粒子 ==================
+        Timeline mainParticleEmitter = new Timeline(
+                new KeyFrame(Duration.seconds(0.25), event -> { // 修正：移除多余的逗号，使用正确参数格式
+                    // 1. 创建扇形粒子（模拟烟雾效果）
+                    Arc particle = new Arc(0, 0, 12, 6, 0, 180);
+                    particle.setType(ArcType.ROUND);
+                    particle.setFill(Color.rgb(255, 240, 200, 0.6));
+
+                    // 2. 添加发光特效
+                    Glow glow = new Glow(0.7);
+                    glow.setInput(new BoxBlur(8, 8, 2));
+                    particle.setEffect(glow);
+
+                    // 3. 设置初始位置（围绕角色随机偏移）
+                    Bounds charBounds = character.getBoundsInParent();
+                    double startX = charBounds.getCenterX() + random.nextInt(40) - 20;
+                    double startY = charBounds.getCenterY() + random.nextInt(40) - 20;
+                    particle.setTranslateX(startX);
+                    particle.setTranslateY(startY);
+                    effectLayer.getChildren().add(particle);
+
+                    // 4. 创建运动路径（柔和曲线）
+                    Path path = new Path();
+                    path.getElements().addAll(
+                            new MoveTo(startX, startY),
+                            new CubicCurveTo(
+                                    startX + random.nextInt(30) - 15,
+                                    startY - 80 + random.nextInt(20),
+                                    startX + random.nextInt(20) - 10,
+                                    startY - 160 + random.nextInt(40),
+                                    startX + random.nextInt(10) - 5,
+                                    startY - 220
+                            )
+                    );
+
+                    // 5. 组合动画（路径移动 + 淡出 + 缩放）
+                    PathTransition pathTransition = new PathTransition(
+                            Duration.seconds(8), path, particle
+                    );
+                    pathTransition.setInterpolator(Interpolator.EASE_OUT);
+
+                    FadeTransition fade = new FadeTransition(Duration.seconds(6), particle);
+                    fade.setFromValue(0.8);
+                    fade.setToValue(0);
+
+                    ScaleTransition scale = new ScaleTransition(Duration.seconds(7), particle);
+                    scale.setToX(0.4);
+                    scale.setToY(0.4);
+
+                    ParallelTransition combo = new ParallelTransition(
+                            pathTransition, fade, scale
+                    );
+
+                    // 6. 动画完成后移除粒子
+                    combo.setOnFinished(evt -> effectLayer.getChildren().remove(particle));
+                    combo.play();
+                })
+        );
+        mainParticleEmitter.setCycleCount(Animation.INDEFINITE);
+        mainParticleEmitter.play();
+
+        // ================== 第二层：背景雾气 ==================
+        Timeline fogEmitter = new Timeline(
+                new KeyFrame(Duration.seconds(1.5), event -> { // 修正：参数格式
+                    Circle fog = new Circle(30, Color.rgb(220, 230, 255, 0.1));
+                    fog.setEffect(new BoxBlur(25, 25, 3));
+
+                    Bounds charBounds = character.getBoundsInParent();
+                    fog.setTranslateX(charBounds.getCenterX());
+                    fog.setTranslateY(charBounds.getCenterY());
+                    effectLayer.getChildren().add(fog);
+
+                    ScaleTransition scale = new ScaleTransition(Duration.seconds(10), fog);
+                    scale.setToX(4.0);
+                    scale.setToY(4.0);
+
+                    FadeTransition fade = new FadeTransition(Duration.seconds(9), fog);
+                    fade.setToValue(0);
+
+                    ParallelTransition fogAnim = new ParallelTransition(scale, fade);
+                    fogAnim.setOnFinished(evt -> effectLayer.getChildren().remove(fog));
+                    fogAnim.play();
+                })
+        );
+        fogEmitter.setCycleCount(Animation.INDEFINITE);
+        fogEmitter.play();
+
+        // ================== 第三层：符文光点 ==================
+        Timeline runeEmitter = new Timeline(
+                new KeyFrame(Duration.seconds(0.8), event -> { // 修正：参数格式
+                    Text rune = new Text(".");
+                    rune.setFont(Font.font("楷体", FontWeight.BOLD, 24));
+                    rune.setFill(Color.rgb(255, 215, 0, 0.7));
+
+                    Bounds charBounds = character.getBoundsInParent();
+                    rune.setTranslateX(charBounds.getCenterX() + random.nextInt(80) - 40);
+                    rune.setTranslateY(charBounds.getCenterY() + random.nextInt(80) - 40);
+                    effectLayer.getChildren().add(rune);
+
+                    TranslateTransition rise = new TranslateTransition(Duration.seconds(4), rune);
+                    rise.setByY(-120);
+                    rise.setByX(random.nextInt(20) - 10);
+
+                    RotateTransition rotate = new RotateTransition(Duration.seconds(6), rune);
+                    rotate.setByAngle(360);
+
+                    FadeTransition fade = new FadeTransition(Duration.seconds(3), rune);
+                    fade.setToValue(0);
+
+                    ParallelTransition runeAnim = new ParallelTransition(rise, rotate, fade);
+                    runeAnim.setOnFinished(evt -> effectLayer.getChildren().remove(rune));
+                    runeAnim.play();
+                })
+        );
+        runeEmitter.setCycleCount(Animation.INDEFINITE);
+        runeEmitter.play();
     }
 
-    public TreasureController getTreasureController() {
-        return treasureController;
-    }
-
-
-    /**
-     * 初始化方法，在 FXML 加载完成后自动调用，用于初始化界面元素和事件处理
-     */
     @FXML
     private void handleAdventureButton() {
         try {
@@ -130,68 +284,6 @@ public class Controller {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-    @FXML
-    private void initialize() {
-        // 将境界标签的文本属性绑定到当前境界属性，并添加前缀 "境界: "
-        lblStage.textProperty().bind(
-                Bindings.createStringBinding(() ->
-                                "境界: " + currentStage.get(),
-                        currentStage
-                )
-        );
-        // 将灵气标签的文本属性绑定到灵气属性，实现自动更新显示
-        lblQi.textProperty().bind(
-                Bindings.createStringBinding(() ->
-                                "灵气：" + NumberFormatter.formatNumber(qi.get()),
-                        qi
-                )
-        );
-        // 将灵气增长速度标签的文本属性绑定到灵气增长速度属性，实现自动更新显示
-        lblQiRate.textProperty().bind(
-                Bindings.createStringBinding(() ->
-                                "增速：" + NumberFormatter.formatNumber((long) qiRate.get()) + "/s",
-                        qiRate
-                )
-        );
-
-        // 启动灵气自动增长的定时器
-        startAutoQiGrowth();
-
-        // 将渡劫成功率标签的文本属性绑定到渡劫成功率属性，实现自动更新显示
-        lblSuccessRate.textProperty().bind(Bindings.format("渡劫成功率：%.1f%%", actualSuccessRate.multiply(100)));
-
-        // 为修炼按钮添加点击事件处理逻辑
-        startAutoQiGrowth();
-        btnCultivate.setOnAction(event -> updataQi(5));
-        // 为炼丹按钮添加点击事件处理逻辑
-        btnAlchemy.setOnAction(event -> openAlchemyPanel());
-        // 初始化随机事件处理器
-        randomEventHandler = new RandomEventHandler(this);
-        // 再次启动灵气自动增长的定时器（可能是代码冗余，可考虑优化）
-        startAutoQiGrowth();
-        initTreasurePanel();
-        initTreasureShop();
-        initStarterTreasure();
-
-        try {
-            // 创建 FXMLLoader 对象，用于加载炼丹界面的 FXML 文件
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("AlchemyView.fxml"));
-            // 加载 FXML 文件并获取根节点
-            Parent root = loader.load();
-            this.alchemyController = loader.getController();
-            this.alchemyController.setMainController(this);
-            // 初始化丹药数据
-            this.alchemyController.initializeCustomPills();
-        } catch (IOException e) {
-            // 打印异常堆栈信息
-            e.printStackTrace();
-            // 输出初始化炼丹控制器失败的信息
-            System.out.println("初始化炼丹控制器失败。");
-        }
-        // 在 initialize() 方法末尾添加：
-        showStoryDialog();
-        startAdventureCheckTimer();
     }
     private void startAdventureCheckTimer() {
         adventureCheckTimer = new AnimationTimer() {
@@ -224,6 +316,112 @@ public class Controller {
         adventureState.incrementTotalCompleted();
         adventureState.setStartTime(0); // 重置开始时间
     }
+    public long calculateMaxOfflineTime() {
+        long baseTime = GameState.BASE_MAX_OFFLINE_TIME_MS; // 60秒基础
+
+        if (treasureController != null) {
+            for (TreasureData treasure : treasureController.getTreasures().values()) {
+                if ("OFFLINE_TIME".equals(treasure.getEffectType())) {
+                    baseTime += (long)(treasure.getEffectValue() * 1000); // 转换为毫秒
+                    System.out.printf("[DEBUG] 应用时空塔效果: %s Lv.%d -> +%.0f秒\n",
+                            treasure.getName(),
+                            treasure.getLevel(),
+                            treasure.getEffectValue());
+                }
+            }
+        }
+
+        System.out.printf("[DEBUG] 最终最大离线时间: %d秒\n", baseTime/1000);
+        return baseTime;
+    }
+
+    public int getStageLevel() {
+        return stageLevel;
+    }
+
+    public TreasureController getTreasureController() {
+        return treasureController;
+    }
+    private void startRandomEventCheck() {
+        new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+            }
+        }.start();
+    }
+    static final long BASE_MAX_OFFLINE_TIME_MS = 1*60 * 1000; // 60秒基础离线时间
+    /**
+     * 初始化方法，在 FXML 加载完成后自动调用，用于初始化界面元素和事件处理
+     */
+    @FXML
+    private void initialize() {
+        // 初始化随机事件处理器
+        randomEventHandler = new RandomEventHandler(this);
+        // 启动随机事件检查的定时器
+        startRandomEventCheck();
+        // 将境界标签的文本属性绑定到当前境界属性，并添加前缀 "境界: "
+        lblStage.textProperty().bind(
+                Bindings.createStringBinding(() ->
+                                "境界: " + currentStage.get(),
+                        currentStage
+                )
+        );
+        // 将灵气标签的文本属性绑定到灵气属性，实现自动更新显示
+        lblQi.textProperty().bind(
+                Bindings.createStringBinding(() ->
+                                "灵气：" + NumberFormatter.formatNumber(qi.get()),
+                        qi
+                )
+        );
+        // 将灵气增长速度标签的文本属性绑定到灵气增长速度属性，实现自动更新显示
+        lblQiRate.textProperty().bind(
+                Bindings.createStringBinding(() ->
+                                "增速：" + NumberFormatter.formatNumber((long) qiRate.get()) + "/s",
+                        qiRate
+                )
+        );
+
+        // 启动灵气自动增长的定时器
+        startAutoQiGrowth();
+
+        // 将渡劫成功率标签的文本属性绑定到渡劫成功率属性，实现自动更新显示
+        lblSuccessRate.textProperty().bind(Bindings.format("渡劫成功率：%.1f%%", actualSuccessRate.multiply(100)));
+
+        // 为修炼按钮添加点击事件处理逻辑
+        startAutoQiGrowth();
+        // 为炼丹按钮添加点击事件处理逻辑
+        btnAlchemy.setOnAction(event -> openAlchemyPanel());
+        // 为修炼按钮添加点击事件处理逻辑
+        btnCultivate.setOnAction(event -> updataQi(1000));
+        // 初始化随机事件处理器
+        randomEventHandler = new RandomEventHandler(this);
+        // 再次启动灵气自动增长的定时器（可能是代码冗余，可考虑优化）
+        startAutoQiGrowth();
+        initTreasurePanel();
+        initTreasureShop();
+        initStarterTreasure();
+
+        try {
+            // 创建 FXMLLoader 对象，用于加载炼丹界面的 FXML 文件
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("AlchemyView.fxml"));
+            // 加载 FXML 文件并获取根节点
+            Parent root = loader.load();
+            this.alchemyController = loader.getController();
+            this.alchemyController.setMainController(this);
+            // 初始化丹药数据
+            this.alchemyController.initializeCustomPills();
+        } catch (IOException e) {
+            // 打印异常堆栈信息
+            e.printStackTrace();
+            // 输出初始化炼丹控制器失败的信息
+            System.out.println("初始化炼丹控制器失败。");
+        }
+        // 在 initialize() 方法末尾添加：
+        showStoryDialog();
+        startAdventureCheckTimer();
+        initializeCharacterAnimation(); // 初始化角色动画
+        startParticleEffect();         // 启动粒子特效
+    }
     private void showStoryDialog() {
         try {
             // 自定义剧情文本（可自由修改）
@@ -251,6 +449,7 @@ public class Controller {
             Stage storyStage = new Stage();
             storyStage.initModality(Modality.APPLICATION_MODAL);
             storyStage.setTitle("仙途启程");
+            storyStage.initStyle(StageStyle.UNDECORATED); // 设置窗口样式为无装饰
             storyStage.setScene(new Scene(root));
 
             // 修改最后一页按钮文本为「进入修仙界面」
@@ -275,12 +474,6 @@ public class Controller {
             }
         }
         return sb.toString();
-    }
-    public AdventureState getAdventureState() {
-        return adventureState;
-    }
-    public double getQiRate() {
-        return qiRate.get();
     }
 
     public void applyPillEffects() {
@@ -326,6 +519,7 @@ public class Controller {
                             stageLevel,
                             System.currentTimeMillis(),
                             adventureState
+
                     );
                     oos.writeObject(state);
                 } else {
@@ -333,9 +527,9 @@ public class Controller {
                             qi.get(),
                             qiRate.get(),
                             savedPills,
-                            treasureController != null ? treasureController.getTreasures() : null,
+                            treasureController.getTreasures(), // 确保保存法宝数据
                             stageLevel,
-                            System.currentTimeMillis(), // 原有参数6：保存时间戳
+                            System.currentTimeMillis(),
                             adventureState
                     );
                     oos.writeObject(state);
@@ -344,7 +538,6 @@ public class Controller {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("保存游戏时出现 IO 错误。");
         }
     }
     private void initTreasurePanel() {
@@ -403,20 +596,25 @@ public class Controller {
             new Alert(Alert.AlertType.ERROR, "无法打开法宝商店！").show();
         }
     }
-
-
-
+    private String formatTime(long totalSeconds) {
+        long hours = totalSeconds / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        long seconds = totalSeconds % 60;
+        return String.format("%d小时%d分%d秒", hours, minutes, seconds);
+    }
     public void updateActualSuccessRate() {
         double pillImpact = 0.0;
         if (alchemyController != null) {
             for (AlchemyController.PillData pill : alchemyController.getPills().values()) {
-                pillImpact += pill.successRateImpact * pill.count;
+                pillImpact = pill.successRateImpact * pill.count;
             }
         }
         actualSuccessRate.set(Math.min(successRate.get() + pillImpact, 1.0));
     }
-    // 在Controller.java中添加
-
+    public String getMaxOfflineTimeDisplay() {
+        long maxSeconds = calculateMaxOfflineTime() / 1000;
+        return formatTime(maxSeconds);
+    }
     /**
      * 加载游戏方法，从指定文件加载游戏状态
      *
@@ -424,160 +622,94 @@ public class Controller {
      */
     public void loadGame(String filePath) {
         try {
-            // 创建文件对象
-            java.io.File file = new java.io.File(filePath);
-
+            File file = new File(filePath);
             if (alchemyStage != null && alchemyStage.isShowing()) {
                 alchemyStage.requestFocus();
             }
             if (file.length() == 0) {
-                // 如果文件为空，输出提示信息并返回
                 System.out.println("存档文件为空，无法加载。");
                 return;
             }
-            if (alchemyStage == null) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("AlchemyView.fxml"));
-                Parent root = loader.load();
-                alchemyStage = new Stage();
-                alchemyStage.setTitle("炼丹界面");
-                alchemyStage.initModality(Modality.APPLICATION_MODAL);
-                alchemyStage.initOwner(lblQi.getScene().getWindow());
-                alchemyStage.setOnHidden(event -> alchemyStage = null);
-                alchemyStage.setScene(new Scene(root));
-                alchemyController = loader.getController();
-                alchemyController.setMainController(this);
-            }
-            alchemyController.loadPillsOnClick();
-            alchemyStage.showAndWait();
-
 
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
-                // 从文件中读取游戏状态对象
                 GameState state = (GameState) ois.readObject();
-                System.out.println("[加载] 读取存档，丹药数量: " + (state.getPills() != null ? state.getPills().size() : 0));// 计算时间差（单位：秒）
-                long savedTime = state.getLastSaveTime();
-                System.out.println("[DEBUG] 存档时间: " + savedTime);
-                long currentTime = System.currentTimeMillis();
-                System.out.println("[DEBUG] 当前时间: " + currentTime);
-                long deltaTimeSeconds = (currentTime - savedTime) / 1000;
-                System.out.println("[DEBUG] 时间差（秒）: " + deltaTimeSeconds);
-                long totalOfflineTimeMs = currentTime - savedTime;
+                System.out.println("[加载] 读取存档，丹药数量: " + (state.getPills() != null ? state.getPills().size() : 0));
 
-
-                // 计算实际有效的离线时间（不超过最大限制）
-                long maxAllowedOfflineTimeMs = GameState.getMaxOfflineTimeMs();
-                long effectiveOfflineTimeMs = Math.min(totalOfflineTimeMs, maxAllowedOfflineTimeMs);
-                long effectiveDeltaTimeSeconds = effectiveOfflineTimeMs / 1000;
-
-
-                // 声明需要显示弹窗的变量
-                boolean showDialog = false;
-                String timeMessage = "";
-                int gainedQi = 0;
-                if (treasureController != null) {
-                    treasureController.setTreasures(state.getTreasures());
-                    treasureController.updateTreasureDisplay(); // 新增：加载后刷新
-                    applyTreasureEffects(); // 新增：效果生效
-                }
-                if (savedTime == 0L) {
-                    // 旧存档处理
-                    qi.set(state.getQi());
-                    System.out.println("[加载] 旧存档，无离线时间补偿");
-                } else if (deltaTimeSeconds > 0) {
-                    // 计算离线灵气
-                    gainedQi = (int) (deltaTimeSeconds * state.getQiRate());
-                    qi.set(state.getQi() + gainedQi);
-
-                    // 转换时间为可读格式
-                    long hours = deltaTimeSeconds / 3600;
-                    long minutes = (deltaTimeSeconds % 3600) / 60;
-                    long seconds = deltaTimeSeconds % 60;
-                    timeMessage = String.format("%d小时%d分%d秒", hours, minutes, seconds);
-
-                    showDialog = true;
-                    System.out.printf("[加载] 离线补偿: %s → %d灵气%n", timeMessage, gainedQi);
-                    long exceededTime = (currentTime - savedTime) - effectiveOfflineTimeMs;
-                    if (exceededTime > 0) {
-                        System.out.printf("[加载] 超出最大离线时间限制: %d秒不计入奖励%n", exceededTime / 1000);
-                    }
-                } else {
-                    // 时间差无效
-                    qi.set(state.getQi());
-                    System.out.println("[加载] 无效时间差，不补偿灵气");
-                }
-
-                // 设置灵气值
-                qi.set(state.getQi() + gainedQi);
-                // 设置灵气增长速度
+                // 1. 先加载基础数据
+                qi.set(state.getQi());
                 qiRate.set(state.getQiRate());
-                // 加载境界等级
                 stageLevel = state.getStageLevel();
-                // 更新当前境界显示
                 currentStage.set(STAGES[stageLevel]);
-                // 更新渡劫成功率
                 successRate.set(BASE_SUCCESS_RATE * Math.pow(DECAY_FACTOR, stageLevel));
-                this.adventureState = state.getAdventureState();
-                // 显示离线奖励弹窗
-                if (showDialog && gainedQi > 0) {
-                    String finalTimeMessage = timeMessage;
-                    int finalGainedQi = gainedQi;
-                    javafx.application.Platform.runLater(() -> {
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                        alert.setTitle("离线奖励");
-                        alert.setHeaderText("修真无岁月，洞中已千年");
-                        long exceededTime = (currentTime - savedTime) - effectiveOfflineTimeMs;
-                        String exceededMsg = exceededTime > 0 ?
-                                String.format("\n\n(超过最大离线时间%d秒不计入奖励)", exceededTime / 1000) : "";
-                        alert.setContentText(String.format(
-                                "你在离开的 %s 时间内\n通过修炼获得了 %d 灵气！",
-                                finalTimeMessage, finalGainedQi
-                        ));
-                        alert.showAndWait();
-                    });
+
+                // 2. 加载法宝数据（必须在计算离线时间前完成）
+                if (state.getTreasures() != null) {
+                    treasureController.setTreasures(state.getTreasures());
+                    System.out.printf("[加载] 已加载 %d 件法宝\n", state.getTreasures().size());
+                    applyTreasureEffects(); // 立即应用法宝效果
                 }
-                // 新增：加载丹药后更新成功率
-                if (alchemyController != null) {
-                    alchemyController.setPills(state.getPills());
-                    updateActualSuccessRate(); // 关键：触发计算
-                }
-                // 2. 更新丹药数据到主控制器的 savedPills
+
+                // 3. 加载丹药数据（不再弹出窗口）
                 savedPills.clear();
                 if (state.getPills() != null) {
-                    savedPills.clear();
                     state.getPills().forEach((id, data) -> {
-                        AlchemyController.PillData copiedData = new AlchemyController.PillData(data.pillId, data.pillName,data.cost, data.rate, data.successRateImpact,data.level);
+                        AlchemyController.PillData copiedData = new AlchemyController.PillData(
+                                data.pillId, data.pillName, data.cost,
+                                data.rate, data.successRateImpact, data.level);
                         copiedData.count = data.count;
                         savedPills.put(id, copiedData);
                     });
                     applyPillEffects();
                 }
-                if (alchemyController != null) {
-                    // 如果炼丹控制器已初始化，设置炼丹数据
-                    alchemyController.setPills(state.getPills());
-                    // 输出游戏加载成功的信息
-                    System.out.println("游戏加载成功，包含炼丹数据和境界信息。");
-                } else {
-                    initializeAlchemyController(); // 新增方法
-                    // 输出炼丹控制器未初始化，无法加载炼丹数据的信息
-                    System.err.println("炼丹控制器未初始化，无法加载炼丹数据。");
 
+                // 4. 计算离线奖励（此时法宝效果已应用）
+                long savedTime = state.getLastSaveTime();
+                long currentTime = System.currentTimeMillis();
+                long totalOfflineTimeMs = currentTime - savedTime;
+
+                if (totalOfflineTimeMs > 0) {
+                    long maxAllowedOfflineTimeMs = calculateMaxOfflineTime();
+                    System.out.printf("[离线时间] 实际离线: %d 秒, 最大允许: %d 秒\n",
+                            totalOfflineTimeMs / 1000, maxAllowedOfflineTimeMs / 1000);
+
+                    long effectiveOfflineTimeMs = Math.min(totalOfflineTimeMs, maxAllowedOfflineTimeMs);
+                    int gainedQi = (int)((effectiveOfflineTimeMs / 1000) * qiRate.get());
+
+                    qi.set(qi.get() + gainedQi);
+
+                    Platform.runLater(() -> {
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("离线奖励");
+                        alert.setHeaderText("修真无岁月，洞中已千年");
+                        alert.setContentText(String.format(
+                                "你在离开的 %s 时间内(最大允许: %s)\n通过修炼获得了 %d 灵气！",
+                                formatTime(totalOfflineTimeMs / 1000),
+                                formatTime(maxAllowedOfflineTimeMs / 1000),
+                                gainedQi
+                        ));
+                        alert.showAndWait();
+                    });
                 }
-                if (treasureController != null) {
-                    treasureController.setTreasures(state.getTreasures());
+
+                // 5. 初始化炼丹控制器但不显示窗口
+                if (alchemyController == null) {
+                    initializeAlchemyController();
                 }
+                if (alchemyController != null && state.getPills() != null) {
+                    alchemyController.setPills(state.getPills());
+                }
+
             }
-        } catch (java.io.EOFException e) {
-            // 输出存档文件损坏，无法加载的信息
-            System.err.println("存档文件损坏，无法加载。");
-            // 打印异常堆栈信息
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (java.io.IOException | ClassNotFoundException e) {
-            // 输出加载游戏时出现错误的信息
-            System.err.println("加载游戏时出现错误：" + e.getMessage());
-            // 打印异常堆栈信息
-            e.printStackTrace();
+            Platform.runLater(() -> {
+                new Alert(Alert.AlertType.ERROR, "加载存档失败: " + e.getMessage()).show();
+            });
         }
+
+        System.out.printf("[加载完成] 当前最大离线时间: %d秒\n", calculateMaxOfflineTime()/1000);
     }
+
 
     /**
      * 处理保存游戏按钮点击事件的方法
@@ -631,7 +763,7 @@ public class Controller {
      * 渡劫逻辑方法
      */
     @FXML
-    private void breakthrough() {
+    void breakthrough() {
         // 获取当前境界对应的消耗量（修改点：动态计算）
         int currentCost = getCurrentBreakthroughCost();
         // 灵气不足判断（修改点：使用动态消耗量）
@@ -650,21 +782,25 @@ public class Controller {
                 currentStage.set(STAGES[stageLevel]);
                 successRate.set(BASE_SUCCESS_RATE * Math.pow(DECAY_FACTOR, stageLevel));
                 qi.set(qi.get() - BASE_BREAKTHROUGH_COST);
-
-                // 衰减丹药影响力并重新加载界面
+// 新增：删除所有丹药
                 if (alchemyController != null) {
-                    alchemyController.getPills().values().forEach(pill -> {
-                        pill.successRateImpact *= 0.1;
-                    });
+                    // 清空主控制器保存的丹药数据
+                    savedPills.clear();
+                    // 清空炼丹界面的丹药数据
                     alchemyController.loadPillsOnClick();
+                    // 重新生成丹药（可选，根据需求）
                     alchemyController.updateAvailablePills();
+                    // 更新显示
                     alchemyController.updatePillDisplay();
+                    // 应用效果变化
+                    applyPillEffects();
                 }
+
                 updateActualSuccessRate();
                 new Alert(Alert.AlertType.INFORMATION, "渡劫成功！当前境界：" + STAGES[stageLevel]).showAndWait();
                 showBreakthroughDialog(); // <--- 新增此行
+                showStageStoryDialog(stageLevel);
             }
-            showStageStoryDialog(stageLevel); // <--- 新增此行
         } else {
             successRate.set(Math.min(successRate.get() + 0.1, 1.0));
             qi.set(qi.get() - BASE_BREAKTHROUGH_COST);
@@ -680,6 +816,7 @@ public class Controller {
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("破境机缘");
+            stage.initStyle(StageStyle.UNDECORATED);
             stage.setScene(new Scene(root));
             stage.showAndWait();
         } catch (IOException e) {
@@ -696,6 +833,7 @@ public class Controller {
             Parent root = loader.load();
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initStyle(StageStyle.UNDECORATED);
             stage.setScene(new Scene(root));
 
             StoryDialogController controller = loader.getController();
@@ -762,6 +900,37 @@ public class Controller {
         }
         return false;
     }
+    // 法宝管理方法
+    // 修改应用法宝效果的方法
+    public void applyTreasureEffects() {
+        // 先重置基础值
+        double baseQiRate = 1.0 + (stageLevel * 0.5);
+        qiRate.set(baseQiRate);
+        clickBonus = 1;
+        // 应用所有法宝效果
+        if (treasureController != null) {
+            for (TreasureData treasure : treasureController.getTreasures().values()) {
+                switch (treasure.getEffectType()) {
+                    case "CLICK_BONUS":
+                        clickBonus += (int) treasure.getEffectValue();
+                        break;
+                    case "AUTO_RATE":
+                        qiRate.set(qiRate.get() + (qiRate.get() * treasure.getEffectPercentage() / 100));
+                        break;
+                    case "AUTO_RATE_BASE":  // 新增处理
+                        qiRate.set(qiRate.get() + treasure.getEffectValue());
+                        break;
+                    case "OFFLINE_TIME":
+                        // 离线时间效果在计算离线时间时处理
+                        break;
+                }
+            }
+        }
+        // 打印调试信息
+        System.out.printf("[效果应用] 修炼速度: %.1f, 最大离线: %d秒\n",
+                qiRate.get(), calculateMaxOfflineTime()/1000);
+    }
+    // 新增方法：提供给其他类获取丹药数据
 
     /**
      * 增加灵气增长速度的方法
@@ -774,36 +943,7 @@ public class Controller {
     }
     // 法宝管理方法
 
-    public void applyTreasureEffects() {
-        // 重置为初始值
-        int totalClickBonus = 0;
-        double totalAutoRate = 0;
-        double totalSuccessRate = 0;
 
-        if (treasureController != null) {
-            for (TreasureData treasure : treasureController.getTreasures().values()) {
-                System.out.println("[DEBUG] 应用法宝效果：" + treasure.getId() +
-                        " Lv." + treasure.getLevel() +
-                        " 效果值:" + treasure.getEffectValue()); // 调试输出
-                switch (treasure.getEffectType()) {
-                    case "CLICK_BONUS":
-                        totalClickBonus += treasure.getEffectValue();
-                        break;
-                    case "AUTO_RATE":
-                        totalAutoRate += treasure.getEffectValue();
-                        break;
-                    case "SUCCESS_RATE":
-                        totalSuccessRate += treasure.getEffectValue();
-                        break;
-                }
-            }
-        }
-
-        this.clickBonus = totalClickBonus;
-        qiRate.set(1.0 + totalAutoRate);
-        actualSuccessRate.set(Math.min(BASE_SUCCESS_RATE + totalSuccessRate, 1.0));
-        System.out.println("[DEBUG] 最终效果 - 点击加成:" + clickBonus + " 自动增速:" + qiRate.get()); // 调试输出
-    }
 
     public void addTreasureToBackpack(TreasureData treasure) {
         if (treasureController != null) {
@@ -870,46 +1010,56 @@ public class Controller {
                 "五禽戏秘籍",
                 "华佗所创养生功法，可强身健体",
                 "初始赠送",
-                500,
+                1000,
                 "CLICK_BONUS",
-                1000
+                5
         );
         starterTreasure.setLevel(1); // 初始等级设为1
         treasureController.getTreasures().put(starterTreasure.getId(), starterTreasure);
         treasureController.updateTreasureDisplay();
+        applyTreasureEffects();
     }
-
-    public void updateQiRate() {
-        double totalAutoRateBonus = 0;
-        // 遍历所有法宝，累加自动增速加成
-        if (treasureController != null) {
-            for (TreasureData treasure : treasureController.getTreasures().values()) {
-                if ("AUTO_RATE".equals(treasure.getEffectType())) {
-                    totalAutoRateBonus += treasure.getEffectValue();
-                }
-            }
-        }
-        // 更新灵气增长速度属性
-        qiRate.set(1.0 + totalAutoRateBonus);
-    }
-
-    //点击修炼按钮时增加灵气的方法
     public void updataQi(int baseBonus) {
         int totalBonus = baseBonus;
         // 遍历所有法宝，累加点击加成
-        for (TreasureData treasure : treasureController.getTreasures().values()) {
-            if ("CLICK_BONUS".equals(treasure.getEffectType())) {
-                totalBonus += (int) treasure.getEffectValue();
+        if (treasureController != null) {
+            for (TreasureData treasure : treasureController.getTreasures().values()) {
+                if ("CLICK_BONUS".equals(treasure.getEffectType())) {
+                    totalBonus += (int) treasure.getEffectValue();
+                }
             }
         }
         qi.set(qi.get() + totalBonus);
+        randomEventHandler.checkOnCultivateClick();
     }
+    public Map<String, Double> getAllTreasureEffects() {
+        Map<String, Double> effects = new HashMap<>();
+        effects.put("AUTO_RATE_BASE", 0.0);
+        effects.put("AUTO_RATE_PERCENT", 0.0);
+        effects.put("CLICK_BONUS", 0.0);
+        effects.put("OFFLINE_TIME", 0.0);
 
-    private int calculateClickBonus() {
-        return treasureController.getTreasures().values().stream()
-                .filter(t -> "CLICK_BONUS".equals(t.getEffectType()))
-                .mapToInt(t -> (int)t.getEffectValue())
-                .sum();
+        if (treasureController != null) {
+            for (TreasureData treasure : treasureController.getTreasures().values()) {
+                switch (treasure.getEffectType()) {
+                    case "AUTO_RATE":
+                        // 聚灵阵等百分比加成法宝
+                        effects.put("AUTO_RATE_PERCENT", effects.get("AUTO_RATE_PERCENT") + treasure.getEffectPercentage());
+                        break;
+                    case "CLICK_BONUS":
+                        effects.put("CLICK_BONUS", effects.get("CLICK_BONUS") + treasure.getEffectValue());
+                        break;
+                    case "OFFLINE_TIME":
+                        effects.put("OFFLINE_TIME", effects.get("OFFLINE_TIME") + treasure.getEffectValue());
+                        break;
+                    case "AUTO_RATE_BASE":
+                        // 其他直接增加固定值的修炼速度法宝
+                        effects.put("AUTO_RATE_BASE", effects.get("AUTO_RATE_BASE") + treasure.getEffectValue());
+                        break;
+                }
+            }
+        }
+        return effects;
     }
     // 修改自动增长逻辑
     private void startAutoQiGrowth() {
@@ -939,15 +1089,9 @@ public class Controller {
         }.start();
     }
 
-    private double calculateAutoBonus() {
-        return treasureController.getTreasures().values().stream()
-                .filter(t -> "AUTO_RATE".equals(t.getEffectType()))
-                .mapToDouble(TreasureData::getEffectValue)
-                .sum();
-    }
     private int getCurrentBreakthroughCost() {
         // 基础消耗为10000，每次境界提升后翻倍
-        return BASE_BREAKTHROUGH_COST * (int) Math.pow(2, stageLevel);
+        return BASE_BREAKTHROUGH_COST * (int) Math.pow(4, stageLevel);
     }
 
     public AlchemyController getAlchemyController() {
@@ -957,5 +1101,37 @@ public class Controller {
 
     public int getQi() { return qi.get();
     }
+    /**
+     * 显示弹幕
+     * @param text 弹幕内容
+     */
+    private void showDanmaku(String text) {
+        Region root = (Region) lblQi.getScene().getRoot();
 
+        if (root == null) return;
+
+        // 获取按钮在场景中的坐标（修正后的逻辑）
+        javafx.geometry.Point2D sceneCoords = btnCultivate.localToScene(0, 0);
+        double x = sceneCoords.getX() + btnCultivate.getScene().getWindow().getX();
+        double y = sceneCoords.getY() + btnCultivate.getScene().getWindow().getY();
+
+        System.out.println("根布局宽度: " + root.getWidth() + ", 根布局高度: " + root.getHeight());
+// 输出根布局的属性，用于调试
+        System.out.println("根布局属性: clip = " + root.getClip() + ", effect = " + root.getEffect());
+
+        // 创建弹幕并直接添加到根布局
+        Danmaku danmaku = new Danmaku(text, x, y);
+        if (root instanceof Pane) {
+            ((Pane) root).getChildren().add(danmaku);
+
+            System.out.println("根布局子节点数量: " + ((Pane) root).getChildren().size());
+
+        } else {
+            new Alert(Alert.AlertType.ERROR, "弹幕系统初始化失败").show();
+        }
+    }
+
+    public double getQiRate() {
+        return qiRate.get(); // 假设 qiRate 是 DoubleProperty
+    }
 }
