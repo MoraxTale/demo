@@ -8,6 +8,11 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.Pane?>
+
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -52,9 +57,20 @@
 
             <!-- 右侧按钮组 -->
             <HBox alignment="CENTER_LEFT" spacing="15">
-                <Button text="冒险" styleClass="rect-btn" onAction="#handleAdventureButton"/>
+                <Button text="冒险" styleClass="rect-btn" onAction="#handleAdventureButton" fx:id="adventureBtn" />
                 <Button text="渡劫" styleClass="rect-btn-red" fx:id="btnBreakthrough" onAction="#breakthrough"/>
             </HBox>
         </HBox>
     </bottom>
+    <!-- 在BorderPane中添加 -->
+    <center>
+        <StackPane fx:id="animationContainer" style="-fx-background-color: transparent;">
+            <!-- 主角动画层 -->
+            <ImageView fx:id="character"
+                       fitWidth="150"
+                       fitHeight="150"
+                       preserveRatio="true"/>
+            <Pane fx:id="effectLayer" style="-fx-background-color: transparent;"/>
+        </StackPane>
+    </center>
 </BorderPane>
