@@ -12,7 +12,6 @@ import javafx.animation.AnimationTimer;
 // 导入 JavaFX 属性相关类
 import javafx.beans.property.*;
 // 导入 JavaFX FXML 相关类，用于加载 FXML 文件和处理 FXML 元素
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 // 导入 JavaFX 场景图相关类
@@ -400,11 +399,14 @@ public class Controller {
     }
 
     // 检查是否已经拥有某个法宝
+    // ✅ 重载方法定义（同时支持String和TreasureData）
+    public boolean hasTreasure(String treasureId) {
+        return treasureController != null &&
+                treasureController.getTreasures().containsKey(treasureId);
+    }
+
     public boolean hasTreasure(TreasureData treasure) {
-        if (treasureController != null) {
-            return treasureController.getTreasures().containsKey(treasure.getId());
-        }
-        return false;
+        return treasure != null && hasTreasure(treasure.getId());
     }
     // 打开法宝商店
     @FXML
@@ -616,8 +618,9 @@ public class Controller {
                 stageLevel++;
                 currentStage.set(STAGES[stageLevel]);
                 successRate.set(BASE_SUCCESS_RATE * Math.pow(DECAY_FACTOR, stageLevel));
-                qi.set(qi.get() - BASE_BREAKTHROUGH_COST);
-// 新增：删除所有丹药
+                qi.set(qi.get() - currentCost);
+                // 新增：删除所有丹药
+
                 if (alchemyController != null) {
                     // 清空主控制器保存的丹药数据
                     savedPills.clear();
@@ -630,7 +633,7 @@ public class Controller {
                     // 应用效果变化
                     applyPillEffects();
                 }
-
+                applyTreasureEffects();
                 updateActualSuccessRate();
                 new Alert(Alert.AlertType.INFORMATION, "渡劫成功！当前境界：" + STAGES[stageLevel]).showAndWait();
                 showBreakthroughDialog(); // <--- 新增此行
@@ -638,7 +641,7 @@ public class Controller {
             }
         } else {
             successRate.set(Math.min(successRate.get() + 0.1, 1.0));
-            qi.set(qi.get() - BASE_BREAKTHROUGH_COST);
+            qi.set(qi.get() - currentCost);
             updateActualSuccessRate();
             new Alert(Alert.AlertType.ERROR, "渡劫失败！下次成功率：" + String.format("%.1f%%", actualSuccessRate.get() * 100)).showAndWait();
         }
@@ -782,10 +785,16 @@ public class Controller {
 
     public void addTreasureToBackpack(TreasureData treasure) {
         if (treasureController != null) {
-            treasureController.getTreasures().put(treasure.getId(), treasure);
+            // 如果法宝已存在则升级，否则添加
+            if (treasureController.getTreasures().containsKey(treasure.getId())) {
+                TreasureData existing = treasureController.getTreasures().get(treasure.getId());
+                existing.upgrade(this);
+            } else {
+                treasure.setObtained(true);
+                treasureController.getTreasures().put(treasure.getId(), treasure);
+                applyTreasureEffects(); // 立即应用效果
+            }
             treasureController.updateTreasureDisplay();
-            System.out.println("[DEBUG] 添加法宝: " + treasure.getId());
-            applyTreasureEffects();
         }
     }
 

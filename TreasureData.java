@@ -24,7 +24,7 @@ public class TreasureData implements Serializable {
     public boolean isMaxLevel() {
         return level >= maxLevel;
     }
-
+    private boolean obtained;
     public TreasureData(String id, String name, String description,
                         String acquisitionMethod, int upgradeCost,
                         String effectType, double effectValue)  {
@@ -37,14 +37,24 @@ public class TreasureData implements Serializable {
         this.effectType = effectType;
         this.effectValue = effectValue;
         this.effectPercentage = effectValue;
+        this.effectValue = effectType.equals("ADVENTURE_ATTEMPTS") ? 1 : effectValue;
+        this.obtained = false;
+    }
+    public boolean isObtained() {
+        return obtained;
+    }
+
+    public void setObtained(boolean obtained) {
+        this.obtained = obtained;
     }
     // 修改效果描述方法
     public String getEffectDescription() {
         return switch (effectType) {
             case "CLICK_BONUS" -> String.format("点击加成+%.0f", effectValue * level);
             case "AUTO_RATE" -> String.format("修炼速度+%.1f%%", effectPercentage * level);
-            case "AUTO_RATE_BASE" -> String.format("每秒修炼速度+%.1f", effectValue * level); // 新增
+            case "AUTO_RATE_BASE" -> String.format("每秒修炼速度+%.1f", effectValue ); // 新增
             case "OFFLINE_TIME" -> String.format("离线时间+%.0f秒", effectValue * level);
+            case "ADVENTURE_ATTEMPTS" -> String.format("每日冒险次数+%.0f次", effectValue );
             default -> "特殊效果";
         };
     }
@@ -126,6 +136,9 @@ public class TreasureData implements Serializable {
                 case "OFFLINE_TIME":
                     this.effectValue += 1800; // 每级增加60秒离线时间
                     break;
+                case "ADVENTURE_ATTEMPTS":  // 新增：冒险罗盘升级逻辑
+                    this.effectValue += 1;  // 每次升级增加1次冒险次数
+                    break;
             }
 
             if (mainController != null) {
@@ -136,6 +149,6 @@ public class TreasureData implements Serializable {
 
     // 添加getter方法
     public Object getMaxLevel() {
-        return null;
+        return maxLevel;
     }
 }

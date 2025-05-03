@@ -110,7 +110,7 @@ public class TreasureShopController {
                         "JX002",
                         "聚灵阵图",
                         "可凝聚天地灵气的上古阵图",
-                        "商店购买",
+                        "冒险获得",
                         1000,
                         "AUTO_RATE",
                         50
@@ -119,7 +119,7 @@ public class TreasureShopController {
                         "SJ004",
                         "时空塔",
                         "可延长修炼时间的逆天法宝",
-                        "商店购买",
+                        "冒险获得",
                         5000,
                         "OFFLINE_TIME",
                         60
@@ -128,11 +128,20 @@ public class TreasureShopController {
                         "XL005",
                         "天穹灵引",
                         "可大幅提升修炼速度的仙家符箓",
-                        "商店购买",
+                        "随机事件获得",
                         8000,
                         "AUTO_RATE_BASE",
                         10.0
-        )
+                ),
+                new TreasureData(
+                        "MX006",
+                        "冒险罗盘",
+                        "增加每日冒险次数的神奇罗盘",
+                        "商店购买",  // 只有这个是商店购买
+                        3000,
+                        "ADVENTURE_ATTEMPTS",
+                        1
+                )
         );
     }
 
@@ -168,7 +177,7 @@ public class TreasureShopController {
                     btn.setStyle("-fx-background-color: #2196F3;");
                     btn.setOnAction(e -> {
                         if (mainController.deductQi(treasure.getUpgradeCost())) {
-                            treasure.upgrade(mainController);
+
                             new Alert(Alert.AlertType.INFORMATION, "升级成功！").show();
                             loadShopTreasures(); // 重新加载商店界面
                             mainController.applyTreasureEffects(); // 更新效果
@@ -227,8 +236,15 @@ public class TreasureShopController {
                     btn.setOnAction(e -> handleUpgrade(actualTreasure));
                 }
             } else {
-                btn.setText(actualTreasure.getName());
-                btn.setOnAction(e -> showPurchaseDialog(actualTreasure));
+                if ("商店购买".equals(actualTreasure.getAcquisitionMethod())) {
+                    btn.setText(actualTreasure.getName() + " (商店购买)");
+                    btn.setDisable(false);  // 允许购买
+                    btn.setOnAction(e -> showTreasureDetail(actualTreasure));
+                } else {
+                    // 其他法宝显示获取方式但不可购买
+                    btn.setText(actualTreasure.getName() + " (" + actualTreasure.getAcquisitionMethod() + ")");
+                    btn.setDisable(true);  // 禁用购买按钮
+                }
             }
 
             Tooltip tooltip = createTooltip(actualTreasure);

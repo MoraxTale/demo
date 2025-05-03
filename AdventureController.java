@@ -66,7 +66,38 @@ public class AdventureController {
         int baseReward = 1000 * area;
         double speedBonus = mainController.getQiRate() * 3600; // 每小时收益
         mainController.updateQi((int) (baseReward + speedBonus));
-
+// 检查是否获得法宝（硬编码逻辑）
+        if (area == 2 && !mainController.hasTreasure("JX002")) {
+            // 区域2获得聚灵阵图
+            if (Math.random() < 0.1) {
+                TreasureData treasure = new TreasureData(
+                        "JX002",
+                        "聚灵阵图",
+                        "可凝聚天地灵气的上古阵图",
+                        "冒险获得",
+                        1000,
+                        "AUTO_RATE",
+                        50
+                );
+                mainController.addTreasureToBackpack(treasure);
+                new Alert(Alert.AlertType.INFORMATION, "获得法宝：聚灵阵图！").show();
+            }
+        } else if (area == 4 && !mainController.hasTreasure("SJ004")) {
+            // 区域4获得时空塔
+            if (Math.random() < 0.1) {
+                TreasureData treasure = new TreasureData(
+                        "SJ004",
+                        "时空塔",
+                        "可延长修炼时间的逆天法宝",
+                        "冒险获得",
+                        5000,
+                        "OFFLINE_TIME",
+                        60
+                );
+                mainController.addTreasureToBackpack(treasure);
+                new Alert(Alert.AlertType.INFORMATION, "获得法宝：时空塔！").show();
+            }
+        }
         // 更新次数
         adventureState.getDailyCounts().put(area,
                 adventureState.getDailyCounts().getOrDefault(area, 0) + 1);

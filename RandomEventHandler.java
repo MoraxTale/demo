@@ -112,7 +112,22 @@ public class RandomEventHandler {
     // **触发随机事件的方法**
     private void triggerRandomEvent() {
         Platform.runLater(() -> {
-            // 定义三种事件
+            // 检查是否可以获得天穹灵引
+            TreasureData treasure = null;
+            if (!mainController.hasTreasure("XL005") && random.nextDouble() < 0.99) { // 10%几率触发
+                treasure = new TreasureData(
+                        "XL005",
+                        "天穹灵引",
+                        "可大幅提升修炼速度的仙家符箓",
+                        "随机事件获得",  // 获取方式文本
+                        8000,
+                        "AUTO_RATE_BASE",
+                        10.0
+                );
+                mainController.addTreasureToBackpack(treasure);
+                showRewardAlert("✨ 机缘巧合获得【天穹灵引】！");
+                return;
+            }
             List<Event> events = new ArrayList<>();
             events.add(new Event("灵气波动", "灵气突然波动,运用功法好像能改变灵气的吸收程度", createQiOptions()));
             events.add(new Event("神秘商人", "神秘商人出现", createMerchantOptions()));
@@ -135,7 +150,6 @@ public class RandomEventHandler {
 
             // 随机选择一个事件
             Event selectedEvent = events.get(random.nextInt(events.size()));
-
             // 显示事件弹窗
             showEventAlert(selectedEvent);
         });
@@ -574,6 +588,7 @@ public class RandomEventHandler {
                         mainController.getStageLevel());
                 newPill.count = 1;
                 mainController.getSavedPills().put(newPillId, newPill);
+                mainController.applyPillEffects();
                 showRewardAlert("创新成功！获得新型丹药：" + newPill.pillName);
             } else {
                 handlePillPenalty(2); // 创新失败损失材料
@@ -964,4 +979,5 @@ public class RandomEventHandler {
         rewardAlert.setContentText(message);
         rewardAlert.showAndWait();
     }
+
 }

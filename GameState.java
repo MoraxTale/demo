@@ -3,6 +3,7 @@ package com.example.demo1;
 // 导入 Java 序列化相关类
 import java.io.Serializable;
 // 导入 Java 集合框架中的 Map 接口
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static com.example.demo1.Controller.BASE_MAX_OFFLINE_TIME_MS;
@@ -52,9 +53,9 @@ public class GameState implements Serializable {
     public GameState(int qi, double qiRate, Map<String, AlchemyController.PillData> pills, Map<String, TreasureData> treasures,int stageLevel,long lastSaveTime,AdventureState adventureState) {
         this.qi = qi;
         this.qiRate = qiRate;
-        this.pills = pills;
+        this.pills = new LinkedHashMap<>(pills);
+        this.treasures = new LinkedHashMap<>(treasures);
         this.stageLevel = stageLevel;
-        this.treasures = treasures;
         this.lastSaveTime = lastSaveTime; // 记录保存时间
         this.adventureState = adventureState;
     }
