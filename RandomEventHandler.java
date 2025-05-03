@@ -10,7 +10,7 @@ import java.util.Random;
 import java.util.*;
 
 public class RandomEventHandler {
-    private static final double TRIGGER_CHANCE = 0.5; // 0.5%触发概率
+    private static final double TRIGGER_CHANCE = 0.005; // 0.5%触发概率
     private final Random random = new Random();
     private final Controller mainController;
     public RandomEventHandler(Controller controller) {
@@ -114,7 +114,7 @@ public class RandomEventHandler {
         Platform.runLater(() -> {
             // 检查是否可以获得天穹灵引
             TreasureData treasure = null;
-            if (!mainController.hasTreasure("XL005") && random.nextDouble() < 0.99) { // 10%几率触发
+            if (!mainController.hasTreasure("XL005") && random.nextDouble() < 0.1) { // 10%几率触发
                 treasure = new TreasureData(
                         "XL005",
                         "天穹灵引",

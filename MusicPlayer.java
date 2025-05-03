@@ -12,6 +12,7 @@ public class MusicPlayer {
         if (musicFile.exists()) {
             Media media = new Media(musicFile.toURI().toString());
             mediaPlayer = new MediaPlayer(media);
+            mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
         }
     }
 
