@@ -12,6 +12,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.image.Image?>
 
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
@@ -44,33 +45,74 @@
         </HBox>
     </top>
 
+    <!-- 修改后的 bottom 区域 -->
     <bottom>
         <HBox alignment="CENTER" spacing="40" style="-fx-padding: 30;">
             <!-- 左侧按钮组 -->
             <HBox alignment="CENTER_RIGHT" spacing="15">
-                <Button text="法宝图鉴" styleClass="rect-btn" onAction="#openTreasureShop"/>
-                <Button text="炼丹" styleClass="rect-btn" fx:id="btnAlchemy"/>
-            </HBox>
+                <Button styleClass="rect-btn" onAction="#openTreasureShop">
+                    <graphic>
+                        <ImageView fitWidth="80" fitHeight="80" preserveRatio="true" pickOnBounds="true">
+                            <image>
+                                <Image url="file:E:/JAVA%20FX/demo/pic/pill.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button styleClass="rect-btn" fx:id="btnAlchemy">
+                    <graphic>
+                        <ImageView fitWidth="80" fitHeight="80" preserveRatio="true" pickOnBounds="true">
+                            <image>
+                                <Image url="file:E:/JAVA%20FX/demo/pic/pill.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+            </HBox> <!-- 确保闭合左侧 HBox -->
 
             <!-- 中央修炼按钮 -->
-            <Button text="修炼" fx:id="btnCultivate" styleClass="circle-btn"/>
+            <Button styleClass="circle-btn" fx:id="btnCultivate">
+                <graphic>
+                    <ImageView fitWidth="100" fitHeight="100" preserveRatio="true" pickOnBounds="true">
+                        <image>
+                            <Image url="file:E:/JAVA%20FX/demo/pic/pill.png" />
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
 
             <!-- 右侧按钮组 -->
             <HBox alignment="CENTER_LEFT" spacing="15">
-                <Button text="冒险" styleClass="rect-btn" onAction="#handleAdventureButton" fx:id="adventureBtn" />
-                <Button text="渡劫" styleClass="rect-btn-red" fx:id="btnBreakthrough" onAction="#breakthrough"/>
-            </HBox>
-        </HBox>
+                <Button styleClass="rect-btn" onAction="#handleAdventureButton" fx:id="adventureBtn">
+                    <graphic>
+                        <ImageView fitWidth="80" fitHeight="80" preserveRatio="true" pickOnBounds="true">
+                            <image>
+                                <Image url="file:E:/JAVA%20FX/demo/pic/pill.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button styleClass="rect-btn-red" fx:id="btnBreakthrough" onAction="#breakthrough">
+                    <graphic>
+                        <ImageView fitWidth="80" fitHeight="80" preserveRatio="true" pickOnBounds="true">
+                            <image>
+                                <Image url="file:E:/JAVA%20FX/demo/pic/pill.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+            </HBox> <!-- 确保闭合右侧 HBox -->
+        </HBox> <!-- 闭合最外层 HBox -->
     </bottom>
     <!-- 在BorderPane中添加 -->
     <center>
         <StackPane fx:id="animationContainer" style="-fx-background-color: transparent;">
             <!-- 主角动画层 -->
-            <ImageView fx:id="character"
-                       fitWidth="150"
-                       fitHeight="150"
-                       preserveRatio="true"/>
+            <ImageView fx:id="character" fitWidth="150" fitHeight="150" preserveRatio="true"/>
             <Pane fx:id="effectLayer" style="-fx-background-color: transparent;"/>
+
+            <!-- 新增弹幕容器 -->
+            <Pane fx:id="danmakuContainer" style="-fx-background-color: transparent;"/>
         </StackPane>
     </center>
 </BorderPane>
