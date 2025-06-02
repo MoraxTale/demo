@@ -54,7 +54,7 @@
                     <graphic>
                         <ImageView fitWidth="80" fitHeight="80" preserveRatio="true" pickOnBounds="true">
                             <image>
-                                <Image url="file:E:/JAVA%20FX/demo/pic/pill.png" />
+                                <Image url="file:E:/JAVA%20FX/demo/pic/Afabao.png" />
                             </image>
                         </ImageView>
                     </graphic>
@@ -63,7 +63,7 @@
                     <graphic>
                         <ImageView fitWidth="80" fitHeight="80" preserveRatio="true" pickOnBounds="true">
                             <image>
-                                <Image url="file:E:/JAVA%20FX/demo/pic/pill.png" />
+                                <Image url="file:E:/JAVA%20FX/demo/pic/Adanyao.png" />
                             </image>
                         </ImageView>
                     </graphic>
@@ -75,7 +75,7 @@
                 <graphic>
                     <ImageView fitWidth="100" fitHeight="100" preserveRatio="true" pickOnBounds="true">
                         <image>
-                            <Image url="file:E:/JAVA%20FX/demo/pic/pill.png" />
+                            <Image url="file:E:/JAVA%20FX/demo/pic/Axiulian.png" />
                         </image>
                     </ImageView>
                 </graphic>
@@ -87,7 +87,7 @@
                     <graphic>
                         <ImageView fitWidth="80" fitHeight="80" preserveRatio="true" pickOnBounds="true">
                             <image>
-                                <Image url="file:E:/JAVA%20FX/demo/pic/pill.png" />
+                                <Image url="file:E:/JAVA%20FX/demo/pic/Amaoxian.png" />
                             </image>
                         </ImageView>
                     </graphic>
@@ -96,7 +96,7 @@
                     <graphic>
                         <ImageView fitWidth="80" fitHeight="80" preserveRatio="true" pickOnBounds="true">
                             <image>
-                                <Image url="file:E:/JAVA%20FX/demo/pic/pill.png" />
+                                <Image url="file:E:/JAVA%20FX/demo/pic/Adujie.png" />
                             </image>
                         </ImageView>
                     </graphic>
