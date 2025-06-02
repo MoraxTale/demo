@@ -1,16 +1,63 @@
 package com.example.demo1;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import java.util.Random;
 import java.util.*;
 
 public class RandomEventHandler {
-    private static final double TRIGGER_CHANCE = 0.005; // 0.5%触发概率
+    private static final String ALERT_STYLE =
+
+                    "-fx-background-position: center;" +
+                    "-fx-background-color: transparent;" + // 关键：背景透明
+                    "-fx-padding: 0;" +                   // 关键：去除内边距
+                    "-fx-border-width: 0;" +              // 关键：去除边框
+                    "-fx-font-family: '华文行楷', '楷体', '隶书';";// 优先使用华文行楷
+
+    private static final String DEEP_STYLE =
+            ".dialog-pane {" +
+                    "   -fx-background-color: transparent;" + // 对话框整体透明
+                    "   -fx-background-image: url('file:/C:/Users/21467/Desktop/demo1/pic/jiyuan.jpg');" + // 直接在此设置背景图
+                    "   -fx-background-size: cover;" +       // 背景图填充方式
+                    "}" +
+                    // 重置所有子容器的背景
+                    ".dialog-pane > * {" +
+                    "   -fx-background-color: transparent;" + // 强制所有子容器透明
+                    "}" +
+                    // 标题样式（金色字体 + 阴影）
+                    ".dialog-pane > .header-panel .label {" +
+                    "-fx-font-family: '华文行楷', '楷体', '隶书';"+
+                    "   -fx-text-fill: #FFD700;" +
+                    "   -fx-font-size: 20px;" +  // 新增字体大小
+                    "   -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 2, 0.5, 0, 1);" +
+                    "}" +
+                    // 描述内容样式（金色字体 + 阴影）
+                    ".dialog-pane > .content.label {" +
+                    "   -fx-text-fill: #FFD700;" +
+                    "   -fx-font-size: 20px;" +  // 新增字体大小
+                    "   -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 2, 0.5, 0, 1);" +
+                    "}";
+    private static final String CONTENT_STYLE =
+            "-fx-background-color: transparent;" +
+                    "-fx-padding: 0;";  // 去除内边距
+    private static final String BUTTON_STYLE =
+            "-fx-background-color: #FFD700;" +  // 主黄色背景
+                    "-fx-border-width: 2;" +            // 边框粗细
+                    "-fx-background-radius: 5;" +      // 圆角
+                    "-fx-border-radius: 5;" +
+                    "-fx-padding: 8 15 8 15;" +
+                    "-fx-font-family: '华文行楷', '楷体', '隶书';" +
+                    "-fx-font-size: 14px;" +
+                    "-fx-effect: drop shadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);"; // 添加阴影效果
+
+
+    private static final double TRIGGER_CHANCE = 0.5; // 0.5%触发概率
     private final Random random = new Random();
     private final Controller mainController;
     public RandomEventHandler(Controller controller) {
@@ -27,15 +74,7 @@ public class RandomEventHandler {
         EQUAL,       // 与玩家相当
         STRONGER     // 比玩家强
     }
-    // **随机事件检查方法**
-    public void checkRandomEvent() {
-        if (random.nextDouble() < TRIGGER_CHANCE) {
-            System.out.println("[随机事件] 触发随机事件");
-            triggerRandomEvent();
-        } else {
-            System.out.println("[随机事件] 未触发");
-        }
-    }
+
     // 获取随机丹药ID
     private String getRandomPillId() {
         if (mainController.getSavedPills().isEmpty()) {
@@ -43,15 +82,6 @@ public class RandomEventHandler {
         }
         List<String> pillIds = new ArrayList<>(mainController.getSavedPills().keySet());
         return pillIds.get(random.nextInt(pillIds.size()));
-    }
-
-    // 处理丹药奖励
-
-    private enum RewardType {
-        QI,          // 灵气
-        PILL,        // 丹药
-        TREASURE,    // 法宝
-        RATE_BOOST   // 修炼速度
     }
 
     private void handlePillReward(int count) {
@@ -114,7 +144,7 @@ public class RandomEventHandler {
         Platform.runLater(() -> {
             // 检查是否可以获得天穹灵引
             TreasureData treasure = null;
-            if (!mainController.hasTreasure("XL005") && random.nextDouble() < 0.1) { // 10%几率触发
+            if (!mainController.hasTreasure("XL005") && random.nextDouble() < 0.05) { // 10%几率触发
                 treasure = new TreasureData(
                         "XL005",
                         "天穹灵引",
@@ -299,14 +329,103 @@ public class RandomEventHandler {
     // **显示事件弹窗的方法**
     private void showEventAlert(Event event) {
         Alert alert = new Alert(Alert.AlertType.NONE);
+        // 设置背景图自适应
+        alert.getDialogPane().setStyle(ALERT_STYLE);
+        // 获取Stage对象并设置可调整大小
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.setMinWidth(600);   // 最小宽度
+        stage.setMinHeight(400);  // 最小高度
+        stage.setResizable(true);
+
+        // 清理旧样式后重新添加
+        alert.getDialogPane().getStylesheets().clear();
+        alert.getDialogPane().getStylesheets().add("data:text/css," + DEEP_STYLE);
+
+        // 设置内容区域透明
+        alert.getDialogPane().lookup(".content").setStyle("-fx-background-color: transparent;");
+
+        // 设置按钮悬停效果
+        alert.getDialogPane().lookupAll(".button").forEach(node -> {
+            Button btn = (Button) node;
+            btn.setStyle(BUTTON_STYLE);
+            // 添加悬停效果
+            btn.setOnMouseEntered(e -> btn.setStyle(BUTTON_STYLE + "-fx-background-color: #FFE55C;"));
+            btn.setOnMouseExited(e -> btn.setStyle(BUTTON_STYLE));
+
+        });
         alert.setTitle(event.getName());
         alert.setHeaderText(event.getDescription());
-        // 只添加三个选项按钮
-        ButtonType option1 = new ButtonType(event.getOptions().get(0).getDescription());
-        ButtonType option2 = new ButtonType(event.getOptions().get(1).getDescription());
-        ButtonType option3 = new ButtonType(event.getOptions().get(2).getDescription());
+        alert.getDialogPane().setMinSize(600, 400);
+        alert.getDialogPane().setPrefSize(600, 400);
+        // 添加选项按钮
+        ButtonType[] options = event.getOptions().stream()
+                .map(opt -> new ButtonType(opt.getDescription()))
+                .toArray(ButtonType[]::new);
+        alert.getButtonTypes().setAll(options);
+        // 修改按钮栏布局
+        Node buttonBar = alert.getDialogPane().lookup(".button-bar");
+        if (buttonBar != null) {
+            // 1. 获取按钮栏的直接父容器
+            Node buttonContainer = buttonBar.getParent();
+            if (buttonContainer instanceof Pane) {
+                Pane containerPane = (Pane) buttonContainer;
+                // 强制父容器使用 BorderPane 底部布局 + 居中
+                BorderPane.setAlignment(buttonBar, Pos.CENTER);
+                containerPane.setStyle(
+                        "-fx-alignment: center;" +          // 父容器内容居中
+                                "-fx-padding: 0 0 30 0;"           // 底部留白 30 像素
+                );
+            }
 
-        alert.getButtonTypes().setAll(option1, option2, option3);
+            // 2. 动态重构按钮栏布局
+            if (buttonBar instanceof HBox) {
+                HBox hbox = (HBox) buttonBar;
+
+                // 清空原有按钮
+                List<Node> buttons = new ArrayList<>(hbox.getChildren());
+                hbox.getChildren().clear();
+
+                // 创建弹性空间
+                Region leftSpacer = new Region();
+                Region rightSpacer = new Region();
+                Region centerSpacer1 = new Region();
+                Region centerSpacer2 = new Region();
+
+                // 设置弹性空间扩展策略
+                HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+                HBox.setHgrow(rightSpacer, Priority.ALWAYS);
+                HBox.setHgrow(centerSpacer1, Priority.ALWAYS);
+                HBox.setHgrow(centerSpacer2, Priority.ALWAYS);
+
+                // 按顺序添加控件
+                hbox.getChildren().addAll(
+                        leftSpacer,          // 左弹性空间
+                        buttons.get(0),      // 第一个按钮
+                        centerSpacer1,       // 中间弹性空间1
+                        buttons.get(1),      // 第二个按钮（居中）
+                        centerSpacer2,       // 中间弹性空间2
+                        buttons.get(2),      // 第三个按钮
+                        rightSpacer          // 右弹性空间
+                );
+
+                // 设置按钮最小间距
+                hbox.setSpacing(10);
+                hbox.setStyle(
+                        "-fx-background-color: transparent;" +
+                                "-fx-padding: 10 0 10 0;" +       // 上下填充
+                                "-fx-border-width: 0;"
+                );
+            }
+        }
+
+        // 3. 强制弹窗重新计算布局
+        Platform.runLater(() -> {
+            alert.getDialogPane().setMinSize(600, 400);
+            alert.getDialogPane().setPrefSize(600, 400);
+            alert.getDialogPane().requestLayout(); // 强制布局刷新
+            stage.sizeToScene();                   // 重新计算窗口尺寸
+        });
+
 
         Optional<ButtonType> result = alert.showAndWait();
         result.ifPresent(buttonType -> {
@@ -442,19 +561,11 @@ public class RandomEventHandler {
     // 新增：判断切磋/战斗结果
     private boolean checkDuelOutcome(NpcLevel npcLevel) {
         int playerLevel = mainController.getStageLevel();
-        int npcLevelValue = playerLevel;
-
-        switch (npcLevel) {
-            case WEAKER:
-                npcLevelValue = Math.max(0, playerLevel - 1 - random.nextInt(2));
-                break;
-            case EQUAL:
-                npcLevelValue = playerLevel;
-                break;
-            case STRONGER:
-                npcLevelValue = Math.min(8, playerLevel + 1 + random.nextInt(2));
-                break;
-        }
+        int npcLevelValue = switch (npcLevel) {
+            case WEAKER -> Math.max(0, playerLevel - 1 - random.nextInt(2));
+            case EQUAL -> playerLevel;
+            case STRONGER -> Math.min(8, playerLevel + 1 + random.nextInt(2));
+        };
 
         // 基础胜率50%，每高一级增加15%胜率，每低一级减少15%胜率
         double winChance = 0.5 + (playerLevel - npcLevelValue) * 0.15;
@@ -726,7 +837,7 @@ public class RandomEventHandler {
                 // 比赛获胜
                 String rarePillId = "rare_pill_" + System.currentTimeMillis();
                 AlchemyController.PillData rarePill = new AlchemyController.PillData(
-                        rarePillId, "大会奖励丹", 0,
+                        rarePillId, "玄天丹", 0,
                         2.0 + random.nextDouble(),
                         0.05 + random.nextDouble() * 0.03,
                         mainController.getStageLevel());
@@ -764,27 +875,29 @@ public class RandomEventHandler {
 
     // 新增：获取NPC描述
     private String getNpcDescription(NpcLevel level) {
-        switch (level) {
-            case WEAKER: return "境界较低";
-            case EQUAL: return "境界相当";
-            case STRONGER: return "境界较高";
-            default: return "";
-        }
+        return switch (level) {
+            case WEAKER -> "境界较低";
+            case EQUAL -> "境界相当";
+            case STRONGER -> "境界较高";
+            default -> "";
+        };
     }
 
     // 新增：获取妖兽描述
     private String getMonsterDescription(NpcLevel level) {
-        switch (level) {
-            case WEAKER: return "较弱妖兽";
-            case EQUAL: return "普通妖兽";
-            case STRONGER: return "强大妖兽";
-            default: return "";
-        }
+        return switch (level) {
+            case WEAKER -> "较弱妖兽";
+            case EQUAL -> "普通妖兽";
+            case STRONGER -> "强大妖兽";
+            default -> "";
+        };
     }
     //新增显示可购买丹药的弹窗方法
     private void showPillPurchaseDialog() {
         long currentQi = mainController.getQi();
-
+        Alert alert = new Alert(Alert.AlertType.NONE); // 先初始化
+        alert.getDialogPane().getStylesheets().add("data:text/css," + DEEP_STYLE);
+        alert.getDialogPane().lookup(".content").setStyle(CONTENT_STYLE);
         // 1. 检查炼丹控制器
         if (mainController.getAlchemyController() == null) {
             showRewardAlert("炼丹系统未准备好");
@@ -792,7 +905,10 @@ public class RandomEventHandler {
         }
 
         // 2. 创建弹窗
-        Alert alert = new Alert(Alert.AlertType.NONE);
+
+        alert.getDialogPane().getStylesheets().add("data:text/css," + DEEP_STYLE);
+        alert.getDialogPane().lookup(".content").setStyle(CONTENT_STYLE);
+
         alert.setTitle("丹药商店");
         alert.setHeaderText(String.format("当前灵气: %d", currentQi));
 
@@ -815,6 +931,11 @@ public class RandomEventHandler {
             if (index >= 50) break; // 最多显示25种
 
             Button pillButton = new Button();
+            pillButton.setStyle("-fx-font-family: '华文行楷';" +
+                    "-fx-font-size: 14px;" +
+                    "-fx-text-fill: #FFD700;" + // 金色文字
+                    "-fx-pref-width: 120;" +
+                    "-fx-wrap-text: true;");
             pillButton.setText(String.format("%s\n%d灵气", pill.pillName, pill.cost));
             pillButton.setStyle("-fx-font-size: 12; -fx-pref-width: 120; -fx-wrap-text: true;");
             pillButton.setOnAction(e -> {
@@ -823,7 +944,7 @@ public class RandomEventHandler {
                             .computeIfAbsent(pill.pillId, k ->
                                     new AlchemyController.PillData(
                                             pill.pillId, pill.pillName,
-                                            pill.cost, pill.rate, pill.successRateImpact,pill.level))
+                                            pill.cost, pill.rate, pill.successRateImpact, pill.level))
                             .count++;
                     mainController.applyPillEffects();
                     ((Stage) pillButton.getScene().getWindow()).close();
@@ -973,11 +1094,51 @@ public class RandomEventHandler {
 
     // **显示奖励弹窗的方法**
     private void showRewardAlert(String message) {
-        Alert rewardAlert = new Alert(Alert.AlertType.INFORMATION);
-        rewardAlert.setTitle("奖励");
-        rewardAlert.setHeaderText("事件奖励");
-        rewardAlert.setContentText(message);
-        rewardAlert.showAndWait();
-    }
+        Alert rewardAlert = new Alert(Alert.AlertType.NONE);
+        // 强制添加确定按钮
+        ButtonType confirmButton = new ButtonType("确定", ButtonBar.ButtonData.OK_DONE);
+        rewardAlert.getButtonTypes().add(confirmButton);
 
+        // 清除标题栏图标
+        Node graphicNode = rewardAlert.getDialogPane().lookup(".alert-header .graphic");
+        if (graphicNode != null) {
+            rewardAlert.getDialogPane().getChildren().remove(graphicNode);
+        }
+        // 设置初始尺寸约束
+        rewardAlert.getDialogPane().setMinSize(600, 400);  // 新增
+        rewardAlert.getDialogPane().setPrefSize(600, 400); // 新增
+        Stage stage = (Stage) rewardAlert.getDialogPane().getScene().getWindow();
+        stage.setResizable(true);
+        stage.setMinWidth(600);
+        stage.setMinHeight(400);
+
+        // 设置内容区域自动换行
+        Label contentLabel = new Label(message);
+        contentLabel.setStyle("-fx-text-fill: #FFD700; -fx-font-family: '华文行楷'; -fx-font-size: 18px;");
+        contentLabel.setWrapText(true);
+        rewardAlert.getDialogPane().setContent(contentLabel);
+        // 样式设置保持不变
+        rewardAlert.setHeaderText(null);
+        contentLabel.setStyle("-fx-background-color: transparent;");
+        rewardAlert.getDialogPane().lookup(".content").setStyle("-fx-background-color: transparent;");
+        rewardAlert.getDialogPane().setStyle(ALERT_STYLE);
+        rewardAlert.getDialogPane().getStylesheets().add("data:text/css," + DEEP_STYLE);
+
+        // 设置按钮样式
+        rewardAlert.getDialogPane().lookupAll(".button").forEach(node -> {
+            Button btn = (Button) node;
+            btn.setStyle(BUTTON_STYLE);
+            btn.setOnMouseEntered(e -> btn.setStyle(BUTTON_STYLE + "-fx-background-color: #FFE55C;"));
+            btn.setOnMouseExited(e -> btn.setStyle(BUTTON_STYLE));
+        });
+        rewardAlert.setContentText(message);
+        // 添加强制布局刷新的代码
+        Platform.runLater(() -> {
+            stage.setWidth(600);
+            stage.setHeight(400);
+            rewardAlert.getDialogPane().requestLayout();
+            stage.sizeToScene();
+        });
+        rewardAlert.showAndWait(); // 现在可以通过确定按钮关闭
+    }
 }
