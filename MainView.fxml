@@ -6,16 +6,21 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.shape.Circle?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.geometry.Insets?>
+
+
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.example.demo1.Controller"
             stylesheets="@style.css"
-            style="-fx-background-image: url('file:///C:/Users/21467/Desktop/demo1/pic/main.png'); -fx-background-size: cover;">
+            style="-fx-background-image: url('file:C:/Users/21467/Desktop/demo1/pic/main.png'); -fx-background-size: cover;">
 
     <top>
         <HBox styleClass="transparent-pane" alignment="CENTER_LEFT">
@@ -41,30 +46,77 @@
         </HBox>
     </top>
 
-    <center>
-        <Pane fx:id="danmakuContainer" style="-fx-background-color: transparent;"
-              prefWidth="600" prefHeight="600">
-            <!-- 这个Pane将覆盖整个中心区域 -->
-        </Pane>
-
-    </center>
-
+    <!-- 修改后的 bottom 区域 -->
     <bottom>
         <HBox alignment="CENTER" spacing="40" style="-fx-padding: 30;">
             <!-- 左侧按钮组 -->
             <HBox alignment="CENTER_RIGHT" spacing="15">
-                <Button text="法宝图鉴" styleClass="rect-btn" onAction="#openTreasureShop"/>
-                <Button text="炼丹" styleClass="rect-btn" fx:id="btnAlchemy"/>
-            </HBox>
+                <Button styleClass="rect-btn image-btn" onAction="#openTreasureShop" style="-fx-padding: 0; -fx-background-color: transparent; -fx-border-color: transparent;">
+                    <graphic>
+                        <ImageView fitWidth="84" fitHeight="84" preserveRatio="true" pickOnBounds="true">
+                            <image>
+                                <Image url="file:C:/Users/21467/Desktop/demo1/pic/法宝.jpg" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button styleClass="rect-btn image-btn" fx:id="btnAlchemy" style="-fx-padding: 0; -fx-background-color: transparent; -fx-border-color: transparent;">
+                    <graphic>
+                        <ImageView fitWidth="84" fitHeight="84" preserveRatio="true" pickOnBounds="true">
+                            <image>
+                                <Image url="file:C:/Users/21467/Desktop/demo1/pic/炼丹.jpg" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+            </HBox> <!-- 确保闭合左侧 HBox -->
 
             <!-- 中央修炼按钮 -->
-            <Button text="修炼" fx:id="btnCultivate" styleClass="circle-btn"/>
+            <Button styleClass="circle-btn image-btn" fx:id="btnCultivate" style="-fx-padding: 0; -fx-background-color: transparent; -fx-border-color: transparent;">
+                <graphic>
+                    <StackPane>
+                        <ImageView fitWidth="124" fitHeight="124" preserveRatio="true" pickOnBounds="true">
+                            <image>
+                                <Image url="file:C:/Users/21467/Desktop/demo1/pic/修炼.jpg" />
+                            </image>
+                        </ImageView>
+                        <Circle radius="62" fill="transparent" stroke="transparent"/>
+                    </StackPane>
+                </graphic>
+            </Button>
 
             <!-- 右侧按钮组 -->
             <HBox alignment="CENTER_LEFT" spacing="15">
-                <Button text="冒险" styleClass="rect-btn" onAction="#handleAdventureButton" fx:id="adventureBtn" />
-                <Button text="渡劫" styleClass="rect-btn-red" fx:id="btnBreakthrough" onAction="#breakthrough"/>
-            </HBox>
-        </HBox>
+                <Button styleClass="rect-btn image-btn" onAction="#handleAdventureButton" fx:id="adventureBtn" style="-fx-padding: 0; -fx-background-color: transparent; -fx-border-color: transparent;">
+                    <graphic>
+                        <ImageView fitWidth="84" fitHeight="84" preserveRatio="true" pickOnBounds="true">
+                            <image>
+                                <Image url="file:C:/Users/21467/Desktop/demo1/pic/冒险.jpg" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button styleClass="rect-btn-red image-btn" fx:id="btnBreakthrough" onAction="#breakthrough" style="-fx-padding: 0; -fx-background-color: transparent; -fx-border-color: transparent;">
+                    <graphic>
+                        <ImageView fitWidth="84" fitHeight="84" preserveRatio="true" pickOnBounds="true">
+                            <image>
+                                <Image url="file:C:/Users/21467/Desktop/demo1/pic/渡劫.jpg" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+            </HBox> <!-- 确保闭合右侧 HBox -->
+        </HBox> <!-- 闭合最外层 HBox -->
     </bottom>
+    <!-- 在BorderPane中添加 -->
+    <center>
+        <StackPane fx:id="animationContainer" style="-fx-background-color: transparent;">
+            <!-- 主角动画层 -->
+            <ImageView fx:id="character" fitWidth="150" fitHeight="150" preserveRatio="true"/>
+            <Pane fx:id="effectLayer" style="-fx-background-color: transparent;"/>
+
+            <!-- 新增弹幕容器 -->
+            <Pane fx:id="danmakuContainer" style="-fx-background-color: transparent;"/>
+        </StackPane>
+    </center>
 </BorderPane>
